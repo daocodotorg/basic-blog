@@ -1,0 +1,98 @@
+{
+  "name": "@basic-blog/convex-blog-cms",
+  "description": "Convex component: blog CMS with Next.js helpers and SEO utilities.",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/basic-blog/basic-blog.git"
+  },
+  "homepage": "https://github.com/basic-blog/basic-blog/tree/main/packages/convex-blog-cms#readme",
+  "bugs": {
+    "url": "https://github.com/basic-blog/basic-blog/issues"
+  },
+  "keywords": ["convex", "component", "blog", "cms"],
+  "type": "module",
+  "scripts": {
+    "dev": "run-p -r 'dev:*'",
+    "dev:backend": "convex dev --typecheck-components",
+    "dev:build": "chokidar 'tsconfig*.json' 'src/**/*.ts' 'src/**/*.tsx' -i '**/*.test.ts' -c 'npm run build:codegen' --initial",
+    "predev": "path-exists dist || npm run build",
+    "build": "tsc --project ./tsconfig.build.json",
+    "build:codegen": "npx convex codegen --component-dir ./src/component && npm run build",
+    "build:clean": "rm -rf dist *.tsbuildinfo && npm run build:codegen",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --typecheck",
+    "test:watch": "vitest --typecheck"
+  },
+  "files": ["dist", "src"],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/client/index.d.ts",
+      "default": "./dist/client/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "default": "./dist/react/index.js"
+    },
+    "./next": {
+      "types": "./dist/next/index.d.ts",
+      "default": "./dist/next/index.js"
+    },
+    "./test": "./src/test.ts",
+    "./_generated/component.js": {
+      "types": "./dist/component/_generated/component.d.ts"
+    },
+    "./_generated/component": {
+      "types": "./dist/component/_generated/component.d.ts"
+    },
+    "./convex.config.js": {
+      "types": "./dist/component/convex.config.d.ts",
+      "default": "./dist/component/convex.config.js"
+    },
+    "./convex.config": {
+      "types": "./dist/component/convex.config.d.ts",
+      "default": "./dist/component/convex.config.js"
+    }
+  },
+  "peerDependencies": {
+    "convex": "^1.33.1",
+    "next": "^14.0.0 || ^15.0.0 || ^16.0.0",
+    "react": "^18.3.1 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": { "optional": true }
+  },
+  "devDependencies": {
+    "@convex-dev/eslint-plugin": "^1.2.0",
+    "@edge-runtime/vm": "^5.0.0",
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "9.39.4",
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.2.0",
+    "chokidar-cli": "3.0.0",
+    "convex": "1.33.1",
+    "convex-test": "0.0.41",
+    "eslint": "9.39.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "next": "16.2.2",
+    "npm-run-all2": "8.0.4",
+    "path-exists-cli": "2.0.0",
+    "prettier": "3.8.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.57.1",
+    "vite": "7.3.1",
+    "vitest": "4.1.0"
+  },
+  "types": "./dist/client/index.d.ts",
+  "module": "./dist/client/index.js"
+}

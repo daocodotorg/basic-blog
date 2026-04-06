@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env*.example
+
+# Next.js
+apps/admin/.next/
+apps/admin/out/
+
+# Convex local (if used)
+.convex/
+
+# OS / editors
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Logs / coverage
+*.log
+coverage/
+
+# Vite / vitest
+packages/convex-blog-cms/node_modules/.vite/

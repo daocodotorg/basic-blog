@@ -1,0 +1,9 @@
+{
+  "name": "basic-blog",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter admin dev",
+    "build": "pnpm -r build",
+    "test": "pnpm --filter @basic-blog/convex-blog-cms test"
+  }
+}
