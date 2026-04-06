@@ -12,16 +12,32 @@ The repo includes [`.github/workflows/release.yml`](../../.github/workflows/rele
 2. Publish **`basic-blog-convex-blog-cms`** to the npm registry (`latest`).
 3. Create a **GitHub Release** for that tag with auto-generated release notes.
 
-**One-time setup (`NPM_TOKEN`):** In GitHub → **Settings → Secrets and variables → Actions**, add repository secret **`NPM_TOKEN`** whose value is an npm token that can **publish without a one-time password** (CI cannot enter an OTP).
+### One-time setup: Trusted publishing (recommended — avoids `EOTP` and secrets)
+
+npm can publish from this repo using **OpenID Connect** so CI never needs an OTP or a long-lived publish token. See [Trusted publishing for npm packages](https://docs.npmjs.com/trusted-publishers).
+
+1. On [npmjs.com](https://www.npmjs.com/) open **`basic-blog-convex-blog-cms`** → **Settings** (or package admin) → **Trusted publishing** / **Publish with OIDC**.
+2. Choose **GitHub Actions** and set:
+   - **Repository:** `daocodotorg/basic-blog` (must match [`package.json`](./package.json) **`repository.url`**).
+   - **Workflow filename:** `release.yml` (only the file name — the workflow lives in `.github/workflows/release.yml`).
+3. Save. The next tag push will use short-lived credentials; you do **not** need **`NPM_TOKEN`** for publish.
+
+The workflow uses **Node 22.14+** and **npm 11.5.1+** on the runner, as required by npm for OIDC.
+
+### Fallback: `NPM_TOKEN` (only if you skip Trusted publishing)
+
+If OIDC is **not** configured, add GitHub Actions secret **`NPM_TOKEN`** with a token that can publish **without** prompting for an authenticator code:
 
 | Token kind | What to use |
 |------------|-------------|
-| **Classic** | Choose type **Automation** (not “Publish”). Automation tokens are meant for CI and **bypass 2FA on `npm publish`**. A “Publish” token still triggers **`EOTP`** when your account uses 2FA. |
-| **Granular** | Create a [granular access token](https://docs.npmjs.com/about-access-tokens#about-granular-access-tokens) with **Packages and scopes** → **Read and write** for **`basic-blog-convex-blog-cms`** (or the whole account, if you prefer). |
+| **Classic** | Type **Automation** (not “Publish”). “Publish” + 2FA often yields **`EOTP`** in CI. |
+| **Granular** | [Granular access token](https://docs.npmjs.com/about-access-tokens#creating-granular-access-tokens-on-the-website) with **Read and write** on **`basic-blog-convex-blog-cms`**. |
 
-After creating the token, paste it into **`NPM_TOKEN`** and save. If a workflow run failed with **`npm error code EOTP`**, replace the secret with a new **Automation** or **granular publish** token as above.
+### If you still see `npm error code EOTP`
 
-The release workflow runs **`npm publish`** from `packages/convex-blog-cms` with an explicit **`~/.npmrc`** auth line so the registry always sees your token (some **`pnpm publish`** setups still prompt for OTP in CI).
+That means npm did **not** accept your token (wrong type, wrong account, or empty secret) **and** OIDC was not used. **Configure Trusted publishing** as above, or create a new **Automation** token while logged in as the npm user that **owns** the package, update **`NPM_TOKEN`**, and re-run the workflow.
+
+The release job runs **`npm publish`** from `packages/convex-blog-cms` (not `pnpm publish`).
 
 **Release steps:**
 
