@@ -10,10 +10,6 @@ dist/
 .env.*
 !.env*.example
 
-# Next.js
-apps/admin/.next/
-apps/admin/out/
-
 # Convex local (if used)
 .convex/
 

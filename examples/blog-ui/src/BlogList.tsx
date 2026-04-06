@@ -1,6 +1,6 @@
 "use client";
 
-import type { PostDTO } from "@basic-blog/convex-blog-cms/next";
+import type { PostDTO } from "basic-blog-convex-blog-cms/next";
 import type { BlogUiTheme } from "./theme.js";
 import { cn, useBlogTheme } from "./theme.js";
 

@@ -1,12 +1,12 @@
-# Basic Blog — Next-first Convex CMS (v1)
+# Basic Blog — Convex CMS component (v1)
 
-Monorepo with a publishable Convex **component** package and a **Next.js App Router** admin app.
+Monorepo with a publishable Convex **component** package (`basic-blog-convex-blog-cms`), a **bundled admin UI** served by `convex-blog-admin serve`, and **reference** docs and examples.
 
 ## Documentation
 
 | Doc | Audience |
 |-----|----------|
-| [docs/SETUP.md](docs/SETUP.md) | **Integrators** — install package, register component, wire `makeBlogAdminAPI`, HTTP, Next |
+| [docs/SETUP.md](docs/SETUP.md) | **Integrators** — install package, register component, wire `makeBlogAdminAPI`, HTTP, optional Next.js |
 | [docs/RENDERING.md](docs/RENDERING.md) | **Integrators** — DTOs, queries, optional example UI (`examples/blog-ui`) |
 | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | **Reference** — env vars, auth, component naming |
 | [packages/convex-blog-cms/README.md](packages/convex-blog-cms/README.md) | **npm** — exports, peers, `BLOG_CMS_COMPONENT_NAME` |
@@ -16,41 +16,35 @@ Convex component expectations are described in the official [Component authoring
 
 ## Packages
 
-- [`packages/convex-blog-cms`](packages/convex-blog-cms) — `@basic-blog/convex-blog-cms`
+- [`packages/convex-blog-cms`](packages/convex-blog-cms) — `basic-blog-convex-blog-cms`
   - Convex tables: `siteSettings`, `posts`, `postBlocks`
   - `makeBlogAdminAPI` for host wiring
-  - Exports: `./convex.config`, `./client`, `./next`, `./test` (no React UI in the package; see `examples/blog-ui`)
+  - Exports: `./convex.config`, `./client`, `./next`, `./test` (no React blog UI in the package; see `examples/blog-ui`)
   - SEO helpers: `resolvePrimaryImage`, JSON-LD, RSS XML, sitemap + image sitemap
+  - CLI `convex-blog-admin` serves the bundled admin SPA from `dist/admin-spa`
 
-- [`apps/admin`](apps/admin) — demo CMS UI (App Router)
+- [`docs/reference/convex-host`](docs/reference/convex-host) — copy-paste **sample** Convex host files (`blog.ts`, `http.ts`, `media.ts`, `schema.ts`, `convex.config.ts`) for integration; not a runnable app.
 
-## Quick start (this repo)
+## Quick start (try the admin UI)
 
-```bash
-pnpm install
-cd apps/admin
-# Create a Convex project and dev deployment, then:
-pnpm exec convex dev
-```
+1. Add the package and wire Convex as in [docs/SETUP.md](docs/SETUP.md) (component registration, `makeBlogAdminAPI`, optional `media` for uploads).
 
-In another terminal:
+2. From the directory where the package is installed:
 
 ```bash
-cd apps/admin
-cp .env.local.example .env.local
-# Set NEXT_PUBLIC_CONVEX_URL from `pnpm exec convex dev` output
-pnpm dev
+CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud" npx convex-blog-admin serve
 ```
 
-Enable **demo admin** with a shared secret (insecure if exposed — local only). Use the same value in Convex and Next:
+3. Open **http://127.0.0.1:3847/admin**.
+
+Optional **demo token auth** (local only — same value in Convex and the CLI):
 
 ```bash
-pnpm exec convex env set BLOG_ADMIN_API_KEY your-long-random-secret
-# In apps/admin/.env.local:
-# NEXT_PUBLIC_BLOG_ADMIN_API_KEY=your-long-random-secret
+npx convex env set BLOG_ADMIN_API_KEY your-long-random-secret
+CONVEX_URL="https://…" BLOG_ADMIN_API_KEY="your-long-random-secret" npx convex-blog-admin serve
 ```
 
-See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all variables.
+See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all variables. The [`examples/blog-ui`](examples/blog-ui) folder is a **reference** for public post pages only. Full admin details: [packages/convex-blog-cms README — Start the admin panel](packages/convex-blog-cms/README.md#start-the-admin-panel).
 
 ### Convex file storage (optional uploads)
 
@@ -58,7 +52,7 @@ Set `DEMO_ADMIN_MODE=true` in Convex (demo only) to enable `convex/media.ts` `ge
 
 ## HTTP routes (host)
 
-`apps/admin/convex/http.ts` mounts:
+Example RSS and sitemap handlers live in [`docs/reference/convex-host/convex/http.ts`](docs/reference/convex-host/convex/http.ts):
 
 - `GET /rss.xml`
 - `GET /sitemap.xml`
@@ -68,8 +62,13 @@ Set `DEMO_ADMIN_MODE=true` in Convex (demo only) to enable `convex/media.ts` `ge
 | Command | Description |
 |--------|-------------|
 | `pnpm test` | Component + SEO unit tests (package) |
-| `pnpm --filter admin build` | Production build of admin |
+| `pnpm --filter basic-blog-convex-blog-cms run build` | Build the CMS package (includes admin SPA) |
 
-## Regenerating Convex `_generated` (admin)
+## Monorepo development
 
-After changing `apps/admin/convex`, run `npx convex dev` once so Convex can regenerate `convex/_generated`. Stub files are committed so the repo typechecks without a deployment; replace them with generated output when linked to a project.
+```bash
+pnpm install
+pnpm dev   # runs basic-blog-convex-blog-cms dev (component + admin SPA)
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for codegen order and PR checks.

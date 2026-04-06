@@ -1,6 +1,0 @@
-{
-  "functions": "convex",
-  "codegen": {
-    "legacyComponentApi": false
-  }
-}

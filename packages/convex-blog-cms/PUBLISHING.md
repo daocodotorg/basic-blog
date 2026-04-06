@@ -1,4 +1,4 @@
-# Publishing `@basic-blog/convex-blog-cms`
+# Publishing `basic-blog-convex-blog-cms`
 
 This follows the same ideas as the [Convex component template](https://github.com/get-convex/templates/tree/main/template-component) and [Component authoring — Publishing](https://docs.convex.dev/components/authoring#publishing-to-npm).
 
@@ -18,17 +18,17 @@ This follows the same ideas as the [Convex component template](https://github.co
    npm test
   ```
    If you have `CONVEX_DEPLOYMENT` set, `build:codegen` can regenerate `src/component/_generated`. Otherwise ensure generated files are committed or produced by your CI.
-4. **Verify `files`**: `[package.json](./package.json)` publishes `dist` and `src` so consumers get source maps and the component tree.
+4. **Verify `files`**: `[package.json](./package.json)` publishes `dist` and `src` so consumers get source maps and the component tree. `npm run build` also runs **Vite** to produce `dist/admin-spa` (bundled admin UI for `convex-blog-admin serve`).
 
 ## Publish
 
 From `packages/convex-blog-cms`:
 
 ```bash
-npm publish --access public
+npm publish
 ```
 
-Scoped packages (`@basic-blog/...`) require `--access public` on first publish unless your org defaults to public.
+The package is **unscoped** (`basic-blog-convex-blog-cms`), so any npm user who is logged in can publish if the name is not already taken — no npm organization is required.
 
 ## Tags
 

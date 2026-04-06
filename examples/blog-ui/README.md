@@ -1,6 +1,6 @@
-# `@basic-blog/example-blog-ui`
+# `examples/blog-ui` — reference UI (not on npm)
 
-Reference **React** UI for blog DTOs from `@basic-blog/convex-blog-cms`. This package is **for the monorepo** (and copy-paste); it is **not** published as part of `@basic-blog/convex-blog-cms`.
+Reference **React** components for rendering blog DTOs from `basic-blog-convex-blog-cms`. This directory is for **learning and copy-paste** — it is **`private`** to the monorepo and **not** published as a package.
 
 ## Contents
 
@@ -9,23 +9,15 @@ Reference **React** UI for blog DTOs from `@basic-blog/convex-blog-cms`. This pa
 - **`BlogList`** — simple list of posts with `hrefForSlug`
 - **`BlogThemeProvider`**, **`useBlogTheme`**, **`defaultBlogTheme`**, **`BlogUiTheme`** — className slots (Tailwind-friendly defaults)
 
-Types (`PostDTO`, `BlockDTO`) are re-exported from `@basic-blog/convex-blog-cms/next`.
+Types (`PostDTO`, `BlockDTO`) come from `basic-blog-convex-blog-cms/next`.
 
-## Usage (Next.js App Router)
+## Usage
 
-```tsx
-import { BlogPost } from "@basic-blog/example-blog-ui";
-import type { PostDTO, BlockDTO } from "@basic-blog/convex-blog-cms/next";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+Copy the `src/` files into your app or use them as a sketch, then wire Convex queries via `makeBlogAdminAPI` (see [docs/SETUP.md](../docs/SETUP.md)).
 
-// After loading post + blocks from getPublishedPostBySlug (hydrated):
-<BlogPost post={post} blocks={blocks} />
-```
+The **bundled admin UI** does **not** depend on this folder — it ships its own editor preview inside the SPA.
 
-Wire Convex queries in your host (`makeBlogAdminAPI`) first; see [docs/SETUP.md](../../docs/SETUP.md).
-
-## Build
+## Build (monorepo)
 
 ```bash
 pnpm --filter @basic-blog/example-blog-ui build

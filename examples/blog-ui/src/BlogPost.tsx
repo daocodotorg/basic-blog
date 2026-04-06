@@ -1,6 +1,6 @@
 "use client";
 
-import type { BlockDTO, PostDTO } from "@basic-blog/convex-blog-cms/next";
+import type { BlockDTO, PostDTO } from "basic-blog-convex-blog-cms/next";
 import type { BlogUiTheme } from "./theme.js";
 import { BlockRenderer } from "./BlockRenderer.js";
 import { cn, useBlogTheme } from "./theme.js";

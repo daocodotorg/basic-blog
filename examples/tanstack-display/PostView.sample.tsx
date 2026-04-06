@@ -3,10 +3,10 @@
 /**
  * TanStack Router / SPA sample — standalone block renderer (not the same as examples/blog-ui BlockRenderer).
  *
- * Sample: render hydrated blocks from @basic-blog/convex-blog-cms (no package React UI).
+ * Sample: render hydrated blocks from basic-blog-convex-blog-cms (no package React UI).
  * Wire `useQuery(api.blog.getPublishedPostBySlug, { slug })` in your route component.
  */
-import type { BlockDTO } from "@basic-blog/convex-blog-cms/next";
+import type { BlockDTO } from "basic-blog-convex-blog-cms/next";
 
 export function PostView(props: {
   title: string;

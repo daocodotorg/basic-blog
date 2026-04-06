@@ -1,6 +1,7 @@
 "use client";
 
-import type { BlockDTO } from "@basic-blog/convex-blog-cms/next";
+import type { BlockDTO } from "basic-blog-convex-blog-cms/next";
+import ReactMarkdown from "react-markdown";
 import type { BlogUiTheme } from "./theme.js";
 import { cn, useBlogTheme } from "./theme.js";
 
@@ -61,7 +62,11 @@ function Block(props: { block: BlockDTO; theme: BlogUiTheme }) {
   const t = props.theme;
   switch (b.type) {
     case "paragraph":
-      return <p className={t.paragraph}>{b.text}</p>;
+      return (
+        <div className={cn(t.paragraph, "[&_a]:underline [&_code]:rounded [&_code]:bg-zinc-100 [&_code]:px-1 [&_p]:mb-3 last:[&_p]:mb-0")}>
+          <ReactMarkdown>{b.text}</ReactMarkdown>
+        </div>
+      );
     case "heading":
       return <Heading level={b.level} text={b.text} theme={t} />;
     case "image":

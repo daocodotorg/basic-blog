@@ -17,8 +17,7 @@ pnpm install
 
 ```bash
 pnpm test
-pnpm --filter @basic-blog/convex-blog-cms run build
-pnpm --filter admin run build
+pnpm --filter basic-blog-convex-blog-cms run build
 ```
 
 ## Component package: codegen order
@@ -38,9 +37,9 @@ The Convex blog CMS lives in [`packages/convex-blog-cms`](packages/convex-blog-c
    pnpm run build
    ```
 
-3. **Consuming app** (`apps/admin`): run `pnpm exec convex dev` so the app’s `_generated` matches.
+3. **Consuming app:** run `npx convex dev` in any project that uses the component so its `_generated` matches.
 
-Avoid racing: codegen the component before publishing or before the example app picks up changes.
+Avoid racing: codegen the component before publishing or before a consuming app picks up changes.
 
 ## Lint
 

@@ -1,6 +1,6 @@
 # Setup: install the Convex blog CMS component
 
-This guide is for **integrators** adding `@basic-blog/convex-blog-cms` to an existing Convex + (optionally) Next.js app. It mirrors [Convex component authoring](https://docs.convex.dev/components/authoring) expectations: install the package, register the component, re-export the host API, and mount HTTP.
+This guide is for **integrators** adding `basic-blog-convex-blog-cms` to an existing Convex + (optionally) Next.js app. It mirrors [Convex component authoring](https://docs.convex.dev/components/authoring) expectations: install the package, register the component, re-export the host API, and mount HTTP.
 
 ## Prerequisites
 
@@ -11,9 +11,9 @@ This guide is for **integrators** adding `@basic-blog/convex-blog-cms` to an exi
 ## 1. Install
 
 ```bash
-npm install @basic-blog/convex-blog-cms convex
+npm install basic-blog-convex-blog-cms convex
 # or
-pnpm add @basic-blog/convex-blog-cms convex
+pnpm add basic-blog-convex-blog-cms convex
 ```
 
 ## 2. Register the component
@@ -22,7 +22,7 @@ In your app’s `convex/convex.config.ts`:
 
 ```ts
 import { defineApp } from "convex/server";
-import blogCms from "@basic-blog/convex-blog-cms/convex.config.js";
+import blogCms from "basic-blog-convex-blog-cms/convex.config.js";
 
 const app = defineApp();
 app.use(blogCms);
@@ -36,7 +36,7 @@ Optional: enable Convex file uploads in the sample app by setting `DEMO_ADMIN_MO
 Create `convex/blog.ts` (or split files) and wire **`makeBlogAdminAPI`**:
 
 ```ts
-import { makeBlogAdminAPI } from "@basic-blog/convex-blog-cms";
+import { makeBlogAdminAPI } from "basic-blog-convex-blog-cms";
 import { components } from "./_generated/api.js";
 
 export const {
@@ -68,13 +68,13 @@ Run `npx convex dev` so `_generated` includes `components.blogCms`.
 
 ## 4. Mount RSS / sitemap (optional)
 
-Copy the pattern from [`apps/admin/convex/http.ts`](../apps/admin/convex/http.ts): `httpActionGeneric` handlers that call your public queries and use helpers from `@basic-blog/convex-blog-cms/next` (`buildRssXml`, `buildSitemapXml`, etc.).
+Copy the pattern from [`docs/reference/convex-host/convex/http.ts`](../reference/convex-host/convex/http.ts): `httpActionGeneric` handlers that call your public queries and use helpers from `basic-blog-convex-blog-cms/next` (`buildRssXml`, `buildSitemapXml`, etc.).
 
 ## 5. Next.js client (optional)
 
 - Set `NEXT_PUBLIC_CONVEX_URL` to your deployment URL.
 - Wrap the app with `ConvexProvider` from `convex/react`.
-- Import SEO helpers and DTO types from `@basic-blog/convex-blog-cms/next`. Render posts with your own components, or copy the reference UI from [`examples/blog-ui`](../examples/blog-ui) in this repo ([RENDERING.md](./RENDERING.md)).
+- Import SEO helpers and DTO types from `basic-blog-convex-blog-cms/next`. Render posts with your own components, or copy the reference UI from [`examples/blog-ui`](../examples/blog-ui) in this repo ([RENDERING.md](./RENDERING.md)).
 
 ## 6. Minimal public blog (Next.js App Router)
 
@@ -110,14 +110,14 @@ For a client-only list, swap `fetchQuery` for `useQuery` from `convex/react` and
 
 ### `app/blog/[slug]/page.tsx` (single post + metadata)
 
-Same route can export `generateMetadata` and a default server page. `postToNextMetadata` lives in `@basic-blog/convex-blog-cms/next`.
+Same route can export `generateMetadata` and a default server page. `postToNextMetadata` lives in `basic-blog-convex-blog-cms/next`.
 
 ```tsx
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
-import { postToNextMetadata } from "@basic-blog/convex-blog-cms/next";
+import { postToNextMetadata } from "basic-blog-convex-blog-cms/next";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -182,7 +182,7 @@ flowchart LR
     HttpTs[convex/http.ts]
     Gen[_generated api]
   end
-  subgraph pkg ["@basic-blog/convex-blog-cms"]
+  subgraph pkg ["basic-blog-convex-blog-cms"]
     MakeAPI[makeBlogAdminAPI]
     Comp[Component blogCms]
   end

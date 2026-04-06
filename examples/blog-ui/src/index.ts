@@ -8,4 +8,4 @@ export {
   useBlogTheme,
 } from "./theme.js";
 export type { BlogUiTheme } from "./theme.js";
-export type { PostDTO, BlockDTO } from "@basic-blog/convex-blog-cms/next";
+export type { PostDTO, BlockDTO } from "basic-blog-convex-blog-cms/next";
