@@ -51,7 +51,7 @@ export function ConvexBlogAdminShell({
   return (
     <ConfigCtx.Provider value={config}>
       <ConvexProvider client={client}>
-        <div className="dark min-h-screen">{children}</div>
+        <div className="dark min-h-screen bg-background text-foreground">{children}</div>
       </ConvexProvider>
     </ConfigCtx.Provider>
   );

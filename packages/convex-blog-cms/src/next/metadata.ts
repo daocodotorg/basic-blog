@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { derivePlainTextDescriptionFromBlocks } from "../seo/deriveDescriptionFromBlocks.js";
 import type { BlockDTO, PostDTO, SiteSettingsDTO } from "../seo/types.js";
 import { resolvePrimaryImage } from "../seo/resolvePrimaryImage.js";
 
@@ -16,7 +17,11 @@ export function postToNextMetadata(input: {
 }): Metadata {
   const { post, blocks, site, path } = input;
   const title = post.metaTitle ?? post.title;
-  const description = post.metaDescription ?? post.excerpt ?? undefined;
+  const description =
+    post.metaDescription ??
+    post.excerpt ??
+    derivePlainTextDescriptionFromBlocks(blocks) ??
+    undefined;
   const canonical = post.canonicalPath
     ? absoluteUrl(site, post.canonicalPath)
     : absoluteUrl(site, path);

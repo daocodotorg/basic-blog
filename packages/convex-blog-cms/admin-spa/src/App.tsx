@@ -45,21 +45,25 @@ export function App() {
 
   if (err) {
     return (
-      <div className="mx-auto max-w-lg p-6 text-sm text-red-700">
-        <p className="font-medium">Could not load admin config</p>
-        <p className="mt-2">{err}</p>
-        <p className="mt-4 text-zinc-600">
-          For <code className="rounded bg-zinc-100 px-1">convex-blog-admin serve</code>, set{" "}
-          <code className="rounded bg-zinc-100 px-1">CONVEX_URL</code>. For Vite dev, set{" "}
-          <code className="rounded bg-zinc-100 px-1">VITE_CONVEX_URL</code> in{" "}
-          <code className="rounded bg-zinc-100 px-1">admin-spa/.env.local</code>.
-        </p>
+      <div className="bg-background text-foreground min-h-screen p-6">
+        <div className="border-border bg-card text-card-foreground mx-auto max-w-lg rounded-lg border p-6 text-sm shadow-sm">
+          <p className="text-destructive font-medium">Could not load admin config</p>
+          <p className="mt-2 text-foreground">{err}</p>
+          <p className="text-muted-foreground mt-4">
+            For <code className="bg-muted rounded px-1 font-mono text-xs text-foreground">convex-blog-admin serve</code>, set{" "}
+            <code className="bg-muted rounded px-1 font-mono text-xs text-foreground">CONVEX_URL</code>. For Vite dev, set{" "}
+            <code className="bg-muted rounded px-1 font-mono text-xs text-foreground">VITE_CONVEX_URL</code> in{" "}
+            <code className="bg-muted rounded px-1 font-mono text-xs text-foreground">admin-spa/.env.local</code>.
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!config?.convexUrl) {
-    return <div className="text-muted-foreground p-8 text-sm">Loading admin…</div>;
+    return (
+      <div className="bg-background text-muted-foreground min-h-screen p-8 text-sm">Loading admin…</div>
+    );
   }
 
   const urlProblem = describeConvexUrlProblem(config.convexUrl);

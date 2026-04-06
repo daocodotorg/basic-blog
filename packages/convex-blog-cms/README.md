@@ -22,8 +22,7 @@ This package ships a **pre-built admin UI** and a CLI, `**convex-blog-admin`**. 
 | You need                                              | Why                                                                                                                                                                                                                                                                        |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `basic-blog-convex-blog-cms` installed                | Supplies the `convex-blog-admin` command and the static UI under `dist/admin-spa`.                                                                                                                                                                                         |
-| Component + `**makeBlogAdminAPI`** in your Convex app | The admin talks to your deployment using `**blog.***` queries/mutations (e.g. `convex/blog.ts`). See **Register the component** and **Host API: `makeBlogAdminAPI`** below, and the full [Setup guide](https://github.com/daocodotorg/basic-blog/blob/main/docs/SETUP.md). |
-| Optional: `**media.generateUploadUrl**`               | Needed for image uploads in the editor; enable demo uploads only as documented (`DEMO_ADMIN_MODE`, etc.).                                                                                                                                                                  |
+| Component + `**makeBlogAdminAPI`** in your Convex app | The admin talks to your deployment using `**blog.***` queries/mutations (e.g. `convex/blog.ts`), including `**blog.generateUploadUrl**` for image uploads. See **Register the component** and **Host API: `makeBlogAdminAPI`** below, and the full [Setup guide](https://github.com/daocodotorg/basic-blog/blob/main/docs/SETUP.md). |
 | Your Convex **deployment URL**                        | Same value as `NEXT_PUBLIC_CONVEX_URL` in a typical app — from `npx convex dev` output or the Convex dashboard.                                                                                                                                                            |
 
 
@@ -33,7 +32,7 @@ This package ships a **pre-built admin UI** and a CLI, `**convex-blog-admin`**. 
   ```bash
    npm install basic-blog-convex-blog-cms
   ```
-2. **Implement and deploy** the host Convex API (`convex/convex.config.ts`, `convex/blog.ts`, optional `convex/media.ts`) so functions are available on the deployment you will target. Follow [Setup](https://github.com/daocodotorg/basic-blog/blob/main/docs/SETUP.md) if you have not done this yet.
+2. **Implement and deploy** the host Convex API (`convex/convex.config.ts`, `convex/blog.ts` exporting everything from `makeBlogAdminAPI`, including `generateUploadUrl`) so functions are available on the deployment you will target. Follow [Setup](https://github.com/daocodotorg/basic-blog/blob/main/docs/SETUP.md) if you have not done this yet.
 3. **Start the admin** from that project’s directory (so `node_modules` resolves):
   ```bash
    CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud" npx convex-blog-admin serve
@@ -89,7 +88,7 @@ Import `BLOG_CMS_COMPONENT_NAME` from this package if you want to avoid typos in
 import { makeBlogAdminAPI } from "basic-blog-convex-blog-cms";
 import { components } from "./_generated/api.js";
 
-export const { getPublishedPostBySlug, listPublishedPosts, /* ... */ } =
+export const { getPublishedPostBySlug, listPublishedPosts, generateUploadUrl, /* ... */ } =
   makeBlogAdminAPI(components.blogCms, {
     // Optional: shared secret checked on the server; clients pass `adminApiKey` on each admin call.
     // adminApiKeySecret: process.env.BLOG_ADMIN_API_KEY,
@@ -113,7 +112,8 @@ Set with `npx convex env set NAME value` or the Convex dashboard.
 | Variable             | When                        | Purpose                                                                                                                                                                                                                                                                 |
 | -------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `BLOG_ADMIN_API_KEY` | Optional simple token auth  | If set, clients may pass matching `adminApiKey`. Missing key is allowed unless you pass `strictAdminApiKey: true` to `makeBlogAdminAPI`. **Treat like a password** when you rely on it; prefer Convex Auth for production.                                            |
-| `DEMO_ADMIN_MODE`    | Optional, demo uploads only | If `true`, the sample host can expose `generateUploadUrl` for [Convex file storage](https://docs.convex.dev/file-storage) uploads. **Do not enable in production** without real auth. Public reads resolve stored `Id<"_storage">` to HTTPS URLs in `makeBlogAdminAPI`. |
+
+`blog.generateUploadUrl` (from `makeBlogAdminAPI`) handles [file storage](https://docs.convex.dev/file-storage) uploads with the same admin auth as other writes; no separate env var for uploads.
 
 
 ### Next.js / browser

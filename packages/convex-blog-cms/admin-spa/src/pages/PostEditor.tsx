@@ -89,6 +89,40 @@ function makeResolver(
   return (id) => map.get(id) ?? null;
 }
 
+function hydrateBlocksForPreview(
+  rows: Array<{ order: number; block: BlockStored }>,
+  resolveStorageUrl: (id: string) => string | null,
+): Array<{ order: number; block: BlockDTO }> {
+  return rows.map(({ order, block }) => {
+    if (block.type !== "image") {
+      return { order, block: block as BlockDTO };
+    }
+    if ("storageId" in block && block.storageId) {
+      const url = resolveStorageUrl(block.storageId) ?? "";
+      return {
+        order,
+        block: {
+          type: "image",
+          url,
+          alt: block.alt,
+          width: block.width,
+          height: block.height,
+        },
+      };
+    }
+    return {
+      order,
+      block: {
+        type: "image",
+        url: block.url,
+        alt: block.alt,
+        width: block.width,
+        height: block.height,
+      },
+    };
+  });
+}
+
 function wordCountFromDoc(doc: JSONContent | null): number {
   if (!doc?.content) {
     return 0;
@@ -124,7 +158,7 @@ export function PostEditor() {
   const publishPost = useMutation(api.blog.publishPost);
   const unpublishPost = useMutation(api.blog.unpublishPost);
   const deletePost = useMutation(api.blog.deletePost);
-  const generateUploadUrl = useMutation(api.media.generateUploadUrl);
+  const generateUploadUrl = useMutation(api.blog.generateUploadUrl);
 
   const editorRef = useRef<Editor | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -197,6 +231,10 @@ export function PostEditor() {
       ogImageStorageId ? base.ogImageUrl
       : ogImageUrl.trim() !== "" ? ogImageUrl.trim()
       : base.ogImageUrl;
+    const featured =
+      featuredStorageId ? base.featuredImageUrl
+      : featuredUrl.trim() !== "" ? featuredUrl.trim()
+      : base.featuredImageUrl;
     return {
       ...base,
       title,
@@ -205,15 +243,32 @@ export function PostEditor() {
       metaTitle: metaTitle || base.metaTitle,
       metaDescription: metaDescription || base.metaDescription,
       ogImageUrl: og,
+      featuredImageUrl: featured,
     };
-  }, [data, title, authorName, excerpt, metaTitle, metaDescription, ogImageUrl, ogImageStorageId]);
+  }, [
+    data,
+    title,
+    authorName,
+    excerpt,
+    metaTitle,
+    metaDescription,
+    ogImageUrl,
+    ogImageStorageId,
+    featuredUrl,
+    featuredStorageId,
+  ]);
 
   const hydratedForPreview = useMemo(() => {
-    if (!data?.hydratedBlocks) {
+    if (!data?.hydratedBlocks || !data.blocks) {
       return [];
     }
-    return data.hydratedBlocks;
-  }, [data]);
+    if (!docJson) {
+      return data.hydratedBlocks;
+    }
+    const resolver = makeResolver(data.blocks, data.hydratedBlocks);
+    const rows = docJsonToBlocks(docJson);
+    return hydrateBlocksForPreview(rows, resolver);
+  }, [data?.hydratedBlocks, data?.blocks, docJson]);
 
   const primary = useMemo(() => {
     if (!previewPost || !settings) {
@@ -595,6 +650,10 @@ export function PostEditor() {
                 SEO & metadata
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-3 space-y-3">
+                <p className="text-muted-foreground text-[11px] leading-relaxed">
+                  Search and social cards use your meta fields when set. Otherwise the post title, excerpt, and cover / first
+                  in-post image are used automatically (see site default OG image in settings).
+                </p>
                 <div className="space-y-1.5">
                   <Label htmlFor="metaTitle">Meta title</Label>
                   <Input
@@ -616,6 +675,7 @@ export function PostEditor() {
                       scheduleSaveMeta();
                     }}
                     rows={3}
+                    placeholder="Leave blank to use excerpt or an auto summary from post content."
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -628,7 +688,7 @@ export function PostEditor() {
                       setOgImageStorageId(null);
                       scheduleSaveMeta();
                     }}
-                    placeholder="https://…"
+                    placeholder="Optional — defaults to cover image, then first image in post"
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -652,8 +712,8 @@ export function PostEditor() {
                   : null}
                 </div>
                 <p className="text-muted-foreground text-[11px]">
-                  Enable <code className="rounded bg-muted px-1 font-mono">DEMO_ADMIN_MODE</code> in Convex for uploads. Host must expose{" "}
-                  <code className="rounded bg-muted px-1 font-mono">media.generateUploadUrl</code>.
+                  Uploads use <code className="rounded bg-muted px-1 font-mono">blog.generateUploadUrl</code> from{" "}
+                  <code className="rounded bg-muted px-1 font-mono">makeBlogAdminAPI</code> (same auth as saving posts).
                 </p>
               </CollapsibleContent>
             </Collapsible>

@@ -336,5 +336,18 @@ export function makeBlogAdminAPI(
         );
       },
     }),
+
+    /**
+     * Short-lived URL for [Convex file storage](https://docs.convex.dev/file-storage) uploads.
+     * Same auth as other admin writes (`adminApiKey` / `auth`). Client POSTs the file; response JSON includes `storageId`.
+     */
+    generateUploadUrl: mutationGeneric({
+      args: { ...optionalAdminApiKey },
+      returns: v.string(),
+      handler: async (ctx, args) => {
+        await enforceAdmin(ctx, { type: "adminWrite" }, args);
+        return await ctx.storage.generateUploadUrl();
+      },
+    }),
   };
 }

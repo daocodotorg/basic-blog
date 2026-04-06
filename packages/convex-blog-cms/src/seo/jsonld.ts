@@ -1,4 +1,5 @@
-import type { PostDTO, PrimaryImage, SiteSettingsDTO } from "./types.js";
+import { derivePlainTextDescriptionFromBlocks } from "./deriveDescriptionFromBlocks.js";
+import type { BlockDTO, PostDTO, PrimaryImage, SiteSettingsDTO } from "./types.js";
 
 function absoluteUrl(site: SiteSettingsDTO | null, path: string): string {
   const base = (site?.baseUrl ?? "").replace(/\/$/, "");
@@ -14,8 +15,10 @@ export function buildArticleJsonLd(input: {
   site: SiteSettingsDTO | null;
   primaryImage: PrimaryImage | null;
   path: string;
+  /** When set, used to derive `description` when meta and excerpt are empty. */
+  blocks?: Array<{ order: number; block: BlockDTO }>;
 }): Record<string, unknown> {
-  const { post, site, primaryImage, path } = input;
+  const { post, site, primaryImage, path, blocks } = input;
   const url = absoluteUrl(site, path);
   const image =
     primaryImage !== null
@@ -30,11 +33,16 @@ export function buildArticleJsonLd(input: {
         : primaryImage.url
       : undefined;
 
+  const description =
+    post.metaDescription ??
+    post.excerpt ??
+    (blocks ? derivePlainTextDescriptionFromBlocks(blocks) : undefined);
+
   const article: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.metaTitle ?? post.title,
-    description: post.metaDescription ?? post.excerpt,
+    description,
     datePublished: post.publishedAt
       ? new Date(post.publishedAt).toISOString()
       : undefined,

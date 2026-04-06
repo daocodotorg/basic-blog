@@ -13,6 +13,9 @@ dist/
 # Convex local (if used)
 .convex/
 
+# Example host: generated after `npx convex dev` (not committed without a linked deployment)
+examples/convex-host/convex/_generated/
+
 # OS / editors
 .DS_Store
 *.swp

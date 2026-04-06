@@ -23,11 +23,13 @@ Convex component expectations are described in the official [Component authoring
   - SEO helpers: `resolvePrimaryImage`, JSON-LD, RSS XML, sitemap + image sitemap
   - CLI `convex-blog-admin` serves the bundled admin SPA from `dist/admin-spa`
 
-- [`docs/reference/convex-host`](docs/reference/convex-host) — copy-paste **sample** Convex host files (`blog.ts`, `http.ts`, `media.ts`, `schema.ts`, `convex.config.ts`) for integration; not a runnable app.
+- [`docs/reference/convex-host`](docs/reference/convex-host) — copy-paste **sample** Convex host files (`blog.ts`, `http.ts`, `schema.ts`, `convex.config.ts`) for integration.
+
+- [`examples/convex-host`](examples/convex-host) — **runnable** minimal host; run `npx convex dev` there after `pnpm install`. `makeBlogAdminAPI` exposes `blog.generateUploadUrl` for the bundled admin (same auth as saving posts).
 
 ## Quick start (try the admin UI)
 
-1. Add the package and wire Convex as in [docs/SETUP.md](docs/SETUP.md) (component registration, `makeBlogAdminAPI`, optional `media` for uploads).
+1. Add the package and wire Convex as in [docs/SETUP.md](docs/SETUP.md) (component registration, `makeBlogAdminAPI` exporting `generateUploadUrl` with your other `blog` functions).
 
 2. From the directory where the package is installed:
 
@@ -46,9 +48,9 @@ CONVEX_URL="https://…" BLOG_ADMIN_API_KEY="your-long-random-secret" npx convex
 
 See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all variables. The [`examples/blog-ui`](examples/blog-ui) folder is a **reference** for public post pages only. Full admin details: [packages/convex-blog-cms README — Start the admin panel](packages/convex-blog-cms/README.md#start-the-admin-panel).
 
-### Convex file storage (optional uploads)
+### Convex file storage (uploads)
 
-Set `DEMO_ADMIN_MODE=true` in Convex (demo only) to enable `convex/media.ts` `generateUploadUrl`. The admin editor uploads images to Convex storage; the CMS stores `Id<"_storage">` on image blocks and SEO fields, and `makeBlogAdminAPI` resolves public HTTPS URLs at read time for SEO and previews.
+The bundled admin calls `blog.generateUploadUrl` from `makeBlogAdminAPI` (same admin auth as posts). The CMS stores `Id<"_storage">` on image blocks and SEO fields; `makeBlogAdminAPI` resolves public HTTPS URLs at read time for SEO and previews.
 
 ## HTTP routes (host)
 

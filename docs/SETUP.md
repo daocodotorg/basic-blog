@@ -29,8 +29,6 @@ app.use(blogCms);
 export default app;
 ```
 
-Optional: enable Convex file uploads in the sample app by setting `DEMO_ADMIN_MODE=true` and using `convex/media.ts` `generateUploadUrl` (see [CONFIGURATION.md](./CONFIGURATION.md)).
-
 ## 3. Expose the host API
 
 Create `convex/blog.ts` (or split files) and wire **`makeBlogAdminAPI`**:
@@ -65,6 +63,12 @@ export const {
 ```
 
 Run `npx convex dev` so `_generated` includes `components.blogCms`.
+
+### 3b. Image uploads (bundled admin)
+
+The bundled admin uploads images via **`blog.generateUploadUrl`**, which is included when you spread **`makeBlogAdminAPI`** into `convex/blog.ts` (export `generateUploadUrl` alongside the other functions). It uses the **same admin auth** as saving posts (`adminApiKey` and/or your `auth` callback). No separate `convex/media.ts` or `DEMO_ADMIN_MODE` is required.
+
+See [examples/convex-host/convex/blog.ts](../examples/convex-host/convex/blog.ts) for a full export list.
 
 ## 4. Mount RSS / sitemap (optional)
 

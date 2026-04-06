@@ -1,0 +1,16 @@
+{
+  "name": "@basic-blog/example-convex-host",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal Convex host for basic-blog-convex-blog-cms — makeBlogAdminAPI exposes blog.generateUploadUrl for admin uploads.",
+  "type": "module",
+  "scripts": {
+    "dev": "convex dev",
+    "dev:once": "convex dev --once",
+    "codegen": "convex codegen"
+  },
+  "dependencies": {
+    "basic-blog-convex-blog-cms": "workspace:*",
+    "convex": "^1.33.1"
+  }
+}

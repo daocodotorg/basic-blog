@@ -1,4 +1,5 @@
 export { postToNextMetadata, siteSettingsToDefaultMetadata } from "./metadata.js";
+export { derivePlainTextDescriptionFromBlocks } from "../seo/deriveDescriptionFromBlocks.js";
 export {
   resolvePrimaryImage,
 } from "../seo/resolvePrimaryImage.js";

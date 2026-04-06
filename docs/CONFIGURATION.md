@@ -9,7 +9,8 @@ Set with `npx convex env set NAME value` (or the Convex dashboard).
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `BLOG_ADMIN_API_KEY` | Optional | If set, clients may pass matching `adminApiKey`. Missing key is allowed unless the host sets `strictAdminApiKey: true` in `makeBlogAdminAPI`. **Not for production** as sole security; use Convex Auth. |
-| `DEMO_ADMIN_MODE` | Optional | Set to `true` to allow the sample host’s `media.generateUploadUrl` (Convex file storage uploads). **Do not enable in production** without replacing with proper auth. |
+
+Image uploads use `blog.generateUploadUrl` from `makeBlogAdminAPI` (same auth as other admin writes). No extra Convex env var is required for uploads.
 
 ## Bundled admin (`convex-blog-admin serve`)
 
