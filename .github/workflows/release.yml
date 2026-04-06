@@ -1,7 +1,8 @@
 # Publish basic-blog-convex-blog-cms to npm and create a GitHub Release when you push a version tag (e.g. v0.1.0).
 #
 # Prerequisites:
-# - Repository secret NPM_TOKEN: npm "Automation" or "Granular access" token with publish rights for the package.
+# - Repository secret NPM_TOKEN: MUST be an npm "Automation" (classic) or granular token with package write.
+#   Do NOT use a classic "Publish" token if the account has 2FA — publish will fail with EOTP (OTP required).
 # - The tag (without leading "v") must exactly match packages/convex-blog-cms/package.json "version".
 #
 # Typical flow:
@@ -61,10 +62,20 @@ jobs:
       - name: Build CMS package
         run: pnpm --filter basic-blog-convex-blog-cms run build
 
+      # Use npm publish from the package directory with an explicit ~/.npmrc token line.
+      # pnpm publish has been observed to hit EOTP in CI even with NODE_AUTH_TOKEN set.
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: pnpm --filter basic-blog-convex-blog-cms publish --access public --no-git-checks
+        working-directory: packages/convex-blog-cms
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "::error::NPM_TOKEN is empty. Add the secret under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          printf '%s\n' "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${HOME}/.npmrc"
+          npm whoami --registry=https://registry.npmjs.org
+          npm publish --access public --no-git-checks
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

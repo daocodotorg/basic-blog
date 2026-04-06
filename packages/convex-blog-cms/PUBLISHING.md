@@ -12,7 +12,16 @@ The repo includes [`.github/workflows/release.yml`](../../.github/workflows/rele
 2. Publish **`basic-blog-convex-blog-cms`** to the npm registry (`latest`).
 3. Create a **GitHub Release** for that tag with auto-generated release notes.
 
-**One-time setup:** In the GitHub repo → **Settings → Secrets and variables → Actions**, add **`NPM_TOKEN`**: create an [npm access token](https://docs.npmjs.com/creating-and-viewing-access-tokens) with **publish** permission for this package (automation or granular token with write access).
+**One-time setup (`NPM_TOKEN`):** In GitHub → **Settings → Secrets and variables → Actions**, add repository secret **`NPM_TOKEN`** whose value is an npm token that can **publish without a one-time password** (CI cannot enter an OTP).
+
+| Token kind | What to use |
+|------------|-------------|
+| **Classic** | Choose type **Automation** (not “Publish”). Automation tokens are meant for CI and **bypass 2FA on `npm publish`**. A “Publish” token still triggers **`EOTP`** when your account uses 2FA. |
+| **Granular** | Create a [granular access token](https://docs.npmjs.com/about-access-tokens#about-granular-access-tokens) with **Packages and scopes** → **Read and write** for **`basic-blog-convex-blog-cms`** (or the whole account, if you prefer). |
+
+After creating the token, paste it into **`NPM_TOKEN`** and save. If a workflow run failed with **`npm error code EOTP`**, replace the secret with a new **Automation** or **granular publish** token as above.
+
+The release workflow runs **`npm publish`** from `packages/convex-blog-cms` with an explicit **`~/.npmrc`** auth line so the registry always sees your token (some **`pnpm publish`** setups still prompt for OTP in CI).
 
 **Release steps:**
 
