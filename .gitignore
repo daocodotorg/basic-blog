@@ -16,6 +16,9 @@ dist/
 # Example host: generated after `npx convex dev` (not committed without a linked deployment)
 examples/convex-host/convex/_generated/
 
+# Next.js example
+examples/next-app/.next/
+
 # OS / editors
 .DS_Store
 *.swp

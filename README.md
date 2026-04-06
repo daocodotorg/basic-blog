@@ -14,6 +14,10 @@ Monorepo with a publishable Convex **component** package (`basic-blog-convex-blo
 
 Convex component expectations are described in the official [Component authoring](https://docs.convex.dev/components/authoring) guide.
 
+## Community
+
+Questions and ideas about this component are welcome: open a [GitHub issue](https://github.com/daocodotorg/basic-blog/issues) or chat with the Convex community in the **[#components](https://discord.com/channels/1019350475847499846/1310320808782311555)** channel on Discord (linked from [Components Authoring](https://www.convex.dev/component-authoring)). Pull requests should follow [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Packages
 
 - [`packages/convex-blog-cms`](packages/convex-blog-cms) — `basic-blog-convex-blog-cms`

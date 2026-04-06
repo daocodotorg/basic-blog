@@ -82,6 +82,8 @@ Copy the pattern from [`docs/reference/convex-host/convex/http.ts`](../reference
 
 ## 6. Minimal public blog (Next.js App Router)
 
+A **runnable** App Router example (Convex host + `fetchQuery` + copied `examples/blog-ui` components) lives in [`examples/next-app`](../examples/next-app) in this monorepo — see that folder’s README for `pnpm dev` / `npx convex dev`.
+
 Assume your host already exports `api.blog.*` from step 3. Add routes that **only** use public queries (`getPublishedPostBySlug`, `listPublishedPosts`, `getPublicSiteSettings`).
 
 ### `app/blog/page.tsx` (post list)

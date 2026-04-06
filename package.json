@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter basic-blog-convex-blog-cms dev",
+    "dev:next": "pnpm --filter @basic-blog/example-next-app dev",
     "build": "pnpm -r build",
     "test": "pnpm --filter basic-blog-convex-blog-cms test"
   }

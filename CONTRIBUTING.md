@@ -1,5 +1,7 @@
 # Contributing
 
+This project follows the [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to uphold it.
+
 ## Prerequisites
 
 - [pnpm](https://pnpm.io/) 8+
@@ -8,7 +10,7 @@
 ## Clone and install
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/daocodotorg/basic-blog.git
 cd basic-blog
 pnpm install
 ```
@@ -51,6 +53,14 @@ cd packages/convex-blog-cms && pnpm run lint
 
 - Keep changes focused and described in the PR text.
 - Update docs in [`docs/`](docs/) or [`packages/convex-blog-cms/README.md`](packages/convex-blog-cms/README.md) when behavior or configuration changes.
+
+## GitHub repository settings (maintainers)
+
+These steps are done in the GitHub UI for [daocodotorg/basic-blog](https://github.com/daocodotorg/basic-blog):
+
+- **Security advisories**: enable private vulnerability reporting so reporters can use [SECURITY.md](SECURITY.md) as documented.
+- **About**: set repository description and topics (for example `convex`, `blog`, `cms`, `component`) so the project is discoverable.
+- **Branch protection** (optional): on `main`, require status checks to pass (e.g. the CI workflow) before merge.
 
 ## Publishing (maintainers)
 

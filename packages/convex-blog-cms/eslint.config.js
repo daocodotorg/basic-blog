@@ -31,6 +31,15 @@ export default [
   },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
+  // Node CLI
+  {
+    files: ["bin/**/*.mjs"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      globals: globals.node,
+    },
+  },
   // Convex code - Worker environment
   {
     files: ["src/**/*.{ts,tsx}", "example/convex/**/*.{ts,tsx}"],

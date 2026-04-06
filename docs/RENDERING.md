@@ -10,7 +10,7 @@
 
 ## Optional reference UI (monorepo)
 
-The **`examples/blog-ui`** folder in this repo is a **reference implementation** (presentational **`BlogPost`**, **`BlockRenderer`**, **`BlogList`**, **`BlogThemeProvider`** with Tailwind-friendly `BlogUiTheme`). It is **not** published to npm — copy or adapt it into your app. The **bundled admin UI** (`convex-blog-admin serve`) includes its own editor preview; use `examples/blog-ui` when you build **public** post pages.
+The **`examples/blog-ui`** folder in this repo is a **reference implementation** (presentational **`BlogPost`**, **`BlockRenderer`**, **`BlogList`**, **`BlogThemeProvider`** with Tailwind-friendly `BlogUiTheme`). It is **not** published to npm — copy or adapt it into your app. For a **full Next.js App Router** sample that embeds this UI, see **`examples/next-app`**. The **bundled admin UI** (`convex-blog-admin serve`) includes its own editor preview; use `examples/blog-ui` when you build **public** post pages.
 
 - Theme merge order: `defaultBlogTheme` → `BlogThemeProvider` → per-component `theme` prop.
 

@@ -1,0 +1,13 @@
+basic-blog-convex-blog-cms
+Copyright basic-blog contributors
+
+This product includes software developed for the Apache License 2.0
+distribution (see LICENSE in this directory).
+
+The published npm package includes a bundled admin single-page application
+under dist/admin-spa/ built from third-party npm dependencies (for example
+UI components, the editor, and tooling). Those dependencies remain under their
+respective licenses; their full license texts ship with each package in
+node_modules when you install this package for development, or you can
+inspect them on https://www.npmjs.com/ for each dependency listed in
+package.json.

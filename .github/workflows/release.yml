@@ -1,0 +1,74 @@
+# Publish basic-blog-convex-blog-cms to npm and create a GitHub Release when you push a version tag (e.g. v0.1.0).
+#
+# Prerequisites:
+# - Repository secret NPM_TOKEN: npm "Automation" or "Granular access" token with publish rights for the package.
+# - The tag (without leading "v") must exactly match packages/convex-blog-cms/package.json "version".
+#
+# Typical flow:
+# 1. On main: set "version" in packages/convex-blog-cms/package.json, commit, push.
+# 2. git tag vX.Y.Z && git push origin vX.Y.Z
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Verify tag matches package version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./packages/convex-blog-cms/package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME implies version $TAG but package.json has $PKG"
+            exit 1
+          fi
+          echo "Publishing $PKG as npm tag latest"
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck CMS package
+        run: pnpm --filter basic-blog-convex-blog-cms run typecheck
+
+      - name: Lint CMS package
+        run: pnpm --filter basic-blog-convex-blog-cms run lint
+
+      - name: Test package
+        run: pnpm test
+
+      - name: Build CMS package
+        run: pnpm --filter basic-blog-convex-blog-cms run build
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm --filter basic-blog-convex-blog-cms publish --access public --no-git-checks
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

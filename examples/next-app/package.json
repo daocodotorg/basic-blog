@@ -1,0 +1,31 @@
+{
+  "name": "@basic-blog/example-next-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Runnable Next.js App Router example for basic-blog-convex-blog-cms (public blog + Convex host).",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build:next": "next build",
+    "start": "next start",
+    "convex:dev": "convex dev",
+    "convex:codegen": "convex codegen"
+  },
+  "dependencies": {
+    "basic-blog-convex-blog-cms": "workspace:*",
+    "convex": "^1.33.1",
+    "next": "16.2.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5"
+  }
+}

@@ -12,6 +12,16 @@ npm install basic-blog-convex-blog-cms convex
 
 **Peer dependencies:** `convex` (^1.33.1). Optional: `next` (^14 || ^15 || ^16) for `./next` helpers.
 
+## Demo (this repository)
+
+To run the **minimal Convex host** that exercises this component from a checkout of [basic-blog](https://github.com/daocodotorg/basic-blog):
+
+1. From the monorepo root: `pnpm install`
+2. `cd examples/convex-host` and run `npx convex dev` (link or create a Convex project when prompted).
+3. From `packages/convex-blog-cms`: `CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud" pnpm exec convex-blog-admin serve` (or `npx convex-blog-admin serve` from any project that depends on this package).
+
+Open **http://127.0.0.1:3847/admin**. See [examples/convex-host/README.md](https://github.com/daocodotorg/basic-blog/blob/main/examples/convex-host/README.md) for details.
+
 ## Start the admin panel
 
 This package ships a **pre-built admin UI** and a CLI, `**convex-blog-admin`**. You do **not** need to scaffold a Next.js app for the default workflow: you wire Convex once, then run one command and open a local URL in the browser.
@@ -224,4 +234,4 @@ Longer copy-paste walkthroughs (Next.js routes, `fetchQuery`, metadata) and the 
 
 ## License
 
-Apache-2.0 (see repository `LICENSE`).
+Apache-2.0 (see repository `LICENSE`). Bundled third-party code in `dist/admin-spa` is summarized in [`NOTICE`](./NOTICE).

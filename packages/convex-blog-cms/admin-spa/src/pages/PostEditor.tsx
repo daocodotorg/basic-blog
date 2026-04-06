@@ -644,9 +644,14 @@ export function PostEditor() {
         {!preview ?
           <>
             <div className="space-y-4">
-              <div>
-                <Label className="text-muted-foreground sr-only">Title</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="post-title">Title</Label>
+                <p className="text-muted-foreground text-[11px] leading-relaxed">
+                  The main headline on the post page and in listings. Also used as the default browser tab title and search
+                  snippet unless you set overrides under SEO & metadata.
+                </p>
                 <Input
+                  id="post-title"
                   value={title}
                   onChange={(e) => {
                     setTitle(e.target.value);
@@ -659,6 +664,10 @@ export function PostEditor() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="slug">Slug</Label>
+                  <p className="text-muted-foreground text-[11px] leading-relaxed">
+                    The last part of the post URL (for example <span className="font-mono">my-post</span> →{" "}
+                    <span className="font-mono">/blog/my-post</span>).
+                  </p>
                   <Input
                     id="slug"
                     value={slugEdit}
@@ -671,6 +680,9 @@ export function PostEditor() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="author">Author</Label>
+                  <p className="text-muted-foreground text-[11px] leading-relaxed">
+                    Shown as the byline on the post. Optional.
+                  </p>
                   <Input
                     id="author"
                     value={authorName}
@@ -683,6 +695,10 @@ export function PostEditor() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="excerpt">Excerpt</Label>
+                <p className="text-muted-foreground text-[11px] leading-relaxed">
+                  A short summary for article cards, RSS, and link previews. If you leave this empty, the site can fall back
+                  to your meta description or an auto-generated snippet from the body.
+                </p>
                 <Textarea
                   id="excerpt"
                   value={excerpt}
@@ -692,6 +708,7 @@ export function PostEditor() {
                   }}
                   rows={2}
                   className="resize-none"
+                  placeholder="Optional teaser text for cards and feeds"
                 />
               </div>
 
