@@ -8,7 +8,7 @@ Set with `npx convex env set NAME value` (or the Convex dashboard).
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `BLOG_ADMIN_API_KEY` | Optional | If set, admin API calls must include matching `adminApiKey` (see package README). **Not for production** as primary security; use Convex Auth. |
+| `BLOG_ADMIN_API_KEY` | Optional | If set, clients may pass matching `adminApiKey`. Missing key is allowed unless the host sets `strictAdminApiKey: true` in `makeBlogAdminAPI`. **Not for production** as sole security; use Convex Auth. |
 | `DEMO_ADMIN_MODE` | Optional | Set to `true` to allow the sample host’s `media.generateUploadUrl` (Convex file storage uploads). **Do not enable in production** without replacing with proper auth. |
 
 ## Bundled admin (`convex-blog-admin serve`)
@@ -18,7 +18,7 @@ Set in the shell when you run the CLI (or via a tool like [dotenv-cli](https://w
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `CONVEX_URL` | Yes | HTTPS URL of your Convex deployment (same as you would use for `NEXT_PUBLIC_CONVEX_URL` in a web app). |
-| `BLOG_ADMIN_API_KEY` | With token auth | Must match Convex `BLOG_ADMIN_API_KEY` so the browser can pass `adminApiKey` on admin calls. |
+| `BLOG_ADMIN_API_KEY` | Optional | If you use token auth, must match Convex `BLOG_ADMIN_API_KEY` when passing `adminApiKey` from the CLI. Omit for open local admin unless the host uses `strictAdminApiKey`. |
 
 ## Next.js or other browser apps
 
@@ -29,14 +29,14 @@ Set in the shell when you run the CLI (or via a tool like [dotenv-cli](https://w
 
 ## Host app: `makeBlogAdminAPI` auth
 
-The package does **not** call `ctx.auth` inside the component. Your host [`convex/blog.ts`](./reference/convex-host/convex/blog.ts) configures `makeBlogAdminAPI` with either:
+The package does **not** call `ctx.auth` inside the component. Your host [`convex/blog.ts`](./reference/convex-host/convex/blog.ts) configures `makeBlogAdminAPI` with:
 
-- **`adminApiKeySecret`** (e.g. `process.env.BLOG_ADMIN_API_KEY`): admin calls include `adminApiKey` matching this value; `auth` is not used when the key matches.
-- **`auth`**: when `adminApiKeySecret` is unset, use **`adminRead`** / **`adminWrite`** to enforce Convex Auth, sessions, or roles.
+- **`adminApiKeySecret`** (e.g. `process.env.BLOG_ADMIN_API_KEY`): when the client sends matching `adminApiKey`, that request is allowed without calling `auth`. If the secret is set but the client omits `adminApiKey`, access is still allowed by default; set **`strictAdminApiKey: true`** to require the token whenever the secret is configured.
+- **`auth`**: when `adminApiKeySecret` is unset, runs for every admin operation — use Convex Auth, sessions, or a no-op for an open dev admin.
 
 Public queries (`getPublishedPostBySlug`, `listPublishedPosts`, `getPublicSiteSettings`) never use these paths.
 
-Replace token auth with real `auth` before shipping to production.
+Replace token-only or open admin with real `auth` before shipping a public production site.
 
 ## Component instance name
 

@@ -101,7 +101,7 @@ export const { getPublishedPostBySlug, listPublishedPosts, /* ... */ } =
   });
 ```
 
-Public read queries do not call `auth`. Admin operations use `**adminApiKeySecret**` (if set) or `**auth**`.
+Public read queries do not call `auth`. Admin operations use `**adminApiKeySecret**` (if set; optionally strict) or `**auth**`.
 
 ## Configuration
 
@@ -112,7 +112,7 @@ Set with `npx convex env set NAME value` or the Convex dashboard.
 
 | Variable             | When                        | Purpose                                                                                                                                                                                                                                                                 |
 | -------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BLOG_ADMIN_API_KEY` | Optional simple token auth  | If set, `makeBlogAdminAPI` requires every admin query/mutation to include `adminApiKey` matching this value. **Treat like a password**; prefer Convex Auth in production.                                                                                               |
+| `BLOG_ADMIN_API_KEY` | Optional simple token auth  | If set, clients may pass matching `adminApiKey`. Missing key is allowed unless you pass `strictAdminApiKey: true` to `makeBlogAdminAPI`. **Treat like a password** when you rely on it; prefer Convex Auth for production.                                            |
 | `DEMO_ADMIN_MODE`    | Optional, demo uploads only | If `true`, the sample host can expose `generateUploadUrl` for [Convex file storage](https://docs.convex.dev/file-storage) uploads. **Do not enable in production** without real auth. Public reads resolve stored `Id<"_storage">` to HTTPS URLs in `makeBlogAdminAPI`. |
 
 
@@ -129,8 +129,8 @@ Set with `npx convex env set NAME value` or the Convex dashboard.
 
 The component does **not** call `ctx.auth` internally. Your host `convex/blog.ts` passes options to `makeBlogAdminAPI`:
 
-- `**adminApiKeySecret`**: If set (e.g. `process.env.BLOG_ADMIN_API_KEY`), each admin function accepts an optional `adminApiKey` argument; when it equals the secret, the request is allowed and the `auth` callback is **not** run. Strip or avoid exposing this in production builds you ship to untrusted users.
-- `**auth`**: When `adminApiKeySecret` is unset (or empty), this runs for every admin operation. Use `**adminRead`** / `**adminWrite**` to enforce Convex Auth, sessions, or roles.
+- `**adminApiKeySecret`**: If set (e.g. `process.env.BLOG_ADMIN_API_KEY`), clients may pass `adminApiKey` matching the secret; the `auth` callback is **not** run when the key matches. If the secret is set but the client omits `adminApiKey`, access is still allowed by default; set `**strictAdminApiKey: true**` to require the token whenever the secret is configured.
+- `**auth`**: When `adminApiKeySecret` is unset (or empty), this runs for every admin operation. Use `**adminRead`** / `**adminWrite**` to enforce Convex Auth, sessions, or roles (or a no-op for an open dev admin).
 - **Public** queries (`getPublishedPostBySlug`, `listPublishedPosts`, `getPublicSiteSettings`) never use these paths.
 
 `makeBlogAdminAPI` resolves Convex file storage ids to HTTPS URLs on public reads. `getPublishedPostBySlug` / `listPublishedPosts` / `getPublicSiteSettings` return **hydrated** DTOs suitable for SEO helpers. `getPostForAdmin` returns raw `post` and `blocks` (including `storageId` fields where used) plus `**hydratedPost`** and `**hydratedBlocks`** for previews.

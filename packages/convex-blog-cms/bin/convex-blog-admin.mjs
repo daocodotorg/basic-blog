@@ -68,6 +68,18 @@ function runServe(port) {
     process.exit(1);
   }
 
+  try {
+    const host = new URL(convexUrl).hostname;
+    if (host.endsWith(".convex.site")) {
+      console.warn(
+        "\nWarning: CONVEX_URL uses .convex.site (HTTP Actions). The admin needs your .convex.cloud deployment URL.\n" +
+          "  Dashboard → Settings → copy the URL ending in .convex.cloud\n",
+      );
+    }
+  } catch {
+    // ignore invalid URL here; the SPA will show an error
+  }
+
   const configPayload = JSON.stringify({
     convexUrl,
     ...(adminApiKey ? { adminApiKey } : {}),

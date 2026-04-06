@@ -21,9 +21,11 @@ export const {
   upsertSiteSettings,
 } = makeBlogAdminAPI(components.blogCms, {
   adminApiKeySecret: process.env.BLOG_ADMIN_API_KEY,
-  auth: async (_ctx, _op) => {
-    throw new Error(
-      "Admin API disabled. Set BLOG_ADMIN_API_KEY in Convex and the same value when running the admin UI, or replace this callback with real auth (see README).",
-    );
-  },
+  /**
+   * Runs only when `BLOG_ADMIN_API_KEY` is **unset** (token mode off). No-op = open admin (dev).
+   * For production without a shared token, replace with Convex Auth (see package README).
+   */
+  auth: async () => {},
+  /** Require `adminApiKey` on every admin call when `BLOG_ADMIN_API_KEY` is set (recommended for prod). */
+  // strictAdminApiKey: true,
 });

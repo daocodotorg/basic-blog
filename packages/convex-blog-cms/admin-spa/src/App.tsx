@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ConvexBlogAdminShell, type RemoteAdminConfig } from "@/adminConfig";
+import { ConvexDeploymentUrlError } from "@/ConvexDeploymentUrlError";
+import { describeConvexUrlProblem } from "@/convexUrlValidation";
 import { AdminEmpty } from "@/pages/AdminEmpty";
 import { AdminSettings } from "@/pages/AdminSettings";
 import { AdminShell } from "@/pages/AdminShell";
@@ -58,6 +60,11 @@ export function App() {
 
   if (!config?.convexUrl) {
     return <div className="text-muted-foreground p-8 text-sm">Loading admin…</div>;
+  }
+
+  const urlProblem = describeConvexUrlProblem(config.convexUrl);
+  if (urlProblem) {
+    return <ConvexDeploymentUrlError convexUrl={config.convexUrl} problem={urlProblem} />;
   }
 
   return (

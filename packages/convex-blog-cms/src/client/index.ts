@@ -48,12 +48,15 @@ function stripAdminApiKey<T extends Record<string, unknown>>(
 
 /**
  * Host app calls this with `components.blogCms` and an auth callback.
- * Public read queries are unauthenticated. Admin operations use `auth`.
+ * Public read queries are unauthenticated. Admin operations use `auth` and/or token checks.
  *
- * If `adminApiKeySecret` is set (e.g. `process.env.BLOG_ADMIN_API_KEY`), each admin
- * call must include `adminApiKey` in args matching that value; `auth` is not run.
- * Otherwise `auth` runs for every admin operation. Use one or the other for simple
- * token auth vs Convex Auth / sessions.
+ * **Token auth (`adminApiKeySecret`):** If set (e.g. `process.env.BLOG_ADMIN_API_KEY`), clients may pass
+ * `adminApiKey` matching that value. By default (`strictAdminApiKey` false), a **missing** client key still
+ * allows access (local dev convenience). A **wrong non-empty** key is always rejected. Set
+ * `strictAdminApiKey: true` to require `adminApiKey` whenever the secret is configured (recommended for
+ * production). When the secret is set and the client key matches, `auth` is not run.
+ *
+ * **No secret:** `auth` runs for every admin operation (use Convex Auth, or a no-op for a fully open dev admin).
  */
 export function makeBlogAdminAPI(
   component: ComponentApi,
@@ -64,12 +67,19 @@ export function makeBlogAdminAPI(
     ) => Promise<void>;
     /** Server-side secret; clients pass the same value as `adminApiKey` on each admin call. */
     adminApiKeySecret?: string;
+    /**
+     * When `adminApiKeySecret` is set, require clients to pass matching `adminApiKey` on every admin call.
+     * Default `false`: missing `adminApiKey` is still allowed (optional token). Set `true` in production when
+     * using shared token auth.
+     */
+    strictAdminApiKey?: boolean;
   },
 ) {
   const { auth } = options;
   const useApiKey =
     options.adminApiKeySecret !== undefined &&
     options.adminApiKeySecret !== "";
+  const strictAdminApiKey = options.strictAdminApiKey === true;
 
   async function enforceAdmin(
     ctx: BlogAdminAuthContext,
@@ -77,10 +87,19 @@ export function makeBlogAdminAPI(
     args: { adminApiKey?: string },
   ): Promise<void> {
     if (useApiKey) {
-      if (args.adminApiKey !== options.adminApiKeySecret) {
-        throw new Error("Unauthorized");
+      const secret = options.adminApiKeySecret as string;
+      const clientKey = args.adminApiKey;
+      if (clientKey === secret) {
+        return;
       }
-      return;
+      const missing = clientKey === undefined || clientKey === "";
+      if (missing) {
+        if (strictAdminApiKey) {
+          throw new Error("Unauthorized");
+        }
+        return;
+      }
+      throw new Error("Unauthorized");
     }
     await auth(ctx, operation);
   }
