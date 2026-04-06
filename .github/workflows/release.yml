@@ -1,16 +1,17 @@
-# Publish basic-blog-convex-blog-cms to npm and create a GitHub Release when you push a version tag (e.g. v0.1.1).
+# Publish basic-blog-convex-blog-cms when you push a version tag (e.g. v0.1.1).
 #
-# Publishing uses npm "Trusted publishing" (OIDC) when configured on npmjs.com — no NPM_TOKEN, no OTP.
-# See packages/convex-blog-cms/PUBLISHING.md and https://docs.npmjs.com/trusted-publishers
+# PRIMARY: npm Trusted publishing (OIDC) — no long-lived token, no OTP.
+#   https://docs.npmjs.com/trusted-publishers
+#   On npmjs: package → Trusted publishing → GitHub Actions
+#   - Repository: daocodotorg/basic-blog (must match package.json repository.url)
+#   - Workflow filename: release.yml  (exactly; case-sensitive)
 #
-# Requirements on npm (one-time):
-# - Package → Settings → Trusted publishing → GitHub Actions
-# - Workflow file name must match exactly: release.yml
-# - Repository must match package.json "repository.url" (this repo)
+# FALLBACK: If OIDC is not set up, add GitHub secret NPM_PUBLISH_TOKEN = npm *Automation*
+#   or granular *read+write* token for this package. Do NOT use a classic "Publish" token
+#   with 2FA — that causes EOTP in CI.
 #
-# Fallback: set Actions secret NPM_TOKEN to an Automation or granular publish token if you are not using OIDC yet.
-#
-# The tag (without leading "v") must match packages/convex-blog-cms/package.json "version".
+# Remove any old Actions secret named NPM_TOKEN if you rely on OIDC; a bad token in
+# ~/.npmrc can force OTP-style auth.
 
 name: Release
 
@@ -21,7 +22,7 @@ on:
 
 permissions:
   contents: write
-  id-token: write # OIDC for npm trusted publishing
+  id-token: write
 
 jobs:
   publish:
@@ -35,15 +36,19 @@ jobs:
         with:
           version: 8
 
-      # Trusted publishing needs Node >= 22.14 and npm >= 11.5.1 (npm docs).
+      # No registry-url here — avoids writing _authToken into ~/.npmrc before publish.
       - uses: actions/setup-node@v4
         with:
           node-version: "22.14"
           cache: "pnpm"
-          registry-url: "https://registry.npmjs.org"
 
-      - name: Use npm 11 for registry / OIDC
-        run: npm install -g npm@11.5.1
+      - name: Verify OIDC endpoint (trusted publishing)
+        run: |
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "::error::OIDC is not available. Ensure permissions.id-token: write is set on this workflow."
+            exit 1
+          fi
+          echo "OIDC token endpoint present (Trusted publishing can be used)."
 
       - name: Verify tag matches package version
         run: |
@@ -70,13 +75,22 @@ jobs:
       - name: Build CMS package
         run: pnpm --filter basic-blog-convex-blog-cms run build
 
-      # OIDC is used automatically when Trusted Publisher is configured on npm.
-      # If not configured yet, NODE_AUTH_TOKEN (Automation / granular token) is the fallback.
+      # npm 11.5.1+ exchanges GitHub OIDC for a publish token. Clear ~/.npmrc so no stale
+      # token from the runner or earlier steps triggers EOTP. Optional NPM_PUBLISH_TOKEN
+      # for token-only CI (Automation / granular), not classic "Publish" + 2FA.
       - name: Publish to npm
         working-directory: packages/convex-blog-cms
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public --no-git-checks
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+        run: |
+          rm -f "${HOME}/.npmrc"
+          if [ -n "${NODE_AUTH_TOKEN:-}" ]; then
+            printf '%s\n' "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${HOME}/.npmrc"
+            echo "NPM_PUBLISH_TOKEN is set — token auth available (npm still prefers OIDC when Trusted publishing is configured)."
+          else
+            echo "NPM_PUBLISH_TOKEN unset — publish must succeed via Trusted publishing (OIDC)."
+          fi
+          npx --yes npm@11.6.0 publish --access public --no-git-checks
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
