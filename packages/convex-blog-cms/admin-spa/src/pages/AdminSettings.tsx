@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "convex/react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useWrapAdminKey } from "@/adminConfig";
 import { api } from "@/convex/api";
@@ -87,17 +87,12 @@ export function AdminSettings() {
     | undefined;
   const upsertSettings = useMutation(api.blog.upsertSiteSettings);
 
-  // Stable key: only remount when settings are first loaded (undefined → defined),
-  // not after every save (which would reset the "Saved." confirmation).
-  const formMountId = useRef(0);
-  const prevWasLoading = useRef(true);
-  if (settings !== undefined && prevWasLoading.current) {
-    formMountId.current += 1;
-    prevWasLoading.current = false;
-  } else if (settings === undefined) {
-    prevWasLoading.current = true;
-  }
-  const formKey = settings === undefined ? "loading" : String(formMountId.current);
+  const formKey =
+    settings === undefined ?
+      "loading"
+    : settings === null ?
+      "no-settings"
+    : `${settings.siteName}\0${settings.baseUrl}\0${settings.defaultOgImageUrl ?? ""}`;
 
   return (
     <div className="mx-auto flex max-w-xl flex-1 flex-col gap-6 p-6">
