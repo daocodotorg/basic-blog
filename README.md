@@ -26,7 +26,7 @@ Questions and ideas about this component are welcome: open a [GitHub issue](http
   - Entry points: `./convex.config`, root client, `./next`, `./test`, `./_generated/component`
   - Visitor-facing **React UI is not in the npm bundle**; copy from `examples/blog-ui` or use `examples/next-app`
   - SEO: `resolvePrimaryImage`, JSON-LD, RSS and sitemap XML builders (mounted on the host)
-  - **Admin:** prebuilt SPA in `dist/admin-spa`, served by `npx convex-blog-admin serve`
+  - **Admin:** prebuilt SPA in `dist/admin-spa`, served by `npx blog-admin-serve` or `npx convex-blog-admin serve`; from this repo use `pnpm blog:admin`
 
 - **[`docs/reference/convex-host`](docs/reference/convex-host)** — **copy-paste** Convex snippets (`blog.ts`, `http.ts`, `schema.ts`, `convex.config.ts`) for your repo.
 
@@ -43,8 +43,10 @@ Questions and ideas about this component are welcome: open a [GitHub issue](http
 2. From the directory where the package is installed:
 
 ```bash
-CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud" npx convex-blog-admin serve
+CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud" npx blog-admin-serve
 ```
+
+(`npx convex-blog-admin serve` is equivalent. In a checkout of this repo you can run `pnpm blog:admin` from the root instead.)
 
 3. Open **http://127.0.0.1:3847/admin**.
 
@@ -54,7 +56,7 @@ Optional **demo token auth** (local only — same value in Convex and the CLI):
 
 ```bash
 npx convex env set BLOG_ADMIN_API_KEY your-long-random-secret
-CONVEX_URL="https://…" BLOG_ADMIN_API_KEY="your-long-random-secret" npx convex-blog-admin serve
+CONVEX_URL="https://…" BLOG_ADMIN_API_KEY="your-long-random-secret" npx blog-admin-serve
 ```
 
 See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all variables. The [`examples/blog-ui`](examples/blog-ui) folder is a **reference** for public post pages only. Full admin details: [packages/convex-blog-cms README — Start the admin panel](packages/convex-blog-cms/README.md#start-the-admin-panel).

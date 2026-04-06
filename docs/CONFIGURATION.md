@@ -12,14 +12,19 @@ Set with `npx convex env set NAME value` (or the Convex dashboard).
 
 Image uploads use `blog.generateUploadUrl` from `makeBlogAdminAPI` (same auth as other admin writes). No extra Convex env var is required for uploads.
 
-## Bundled admin (`convex-blog-admin serve`)
+## Bundled admin (`blog-admin-serve` / `convex-blog-admin serve`)
+
+Prefer **`npx blog-admin-serve`**: it accepts the same URL env vars as a typical web app and runs the bundled `convex-blog-admin serve` from the installed package.
 
 Set in the shell when you run the CLI (or via a tool like [dotenv-cli](https://www.npmjs.com/package/dotenv-cli)):
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `CONVEX_URL` | Yes | HTTPS URL of your Convex deployment (same as you would use for `NEXT_PUBLIC_CONVEX_URL` in a web app). |
+| `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` | Yes | HTTPS deployment URL (`.convex.cloud`). Set at least one. Both **`blog-admin-serve`** and **`convex-blog-admin serve`** read either variable. |
+| `BLOG_ADMIN_PORT` | Optional | Default port when **`blog-admin-serve`** is used without `--port` (underlying CLI default remains **3847**). |
 | `BLOG_ADMIN_API_KEY` | Optional | If you use token auth, must match Convex `BLOG_ADMIN_API_KEY` when passing `adminApiKey` from the CLI. Omit for open local admin unless the host uses `strictAdminApiKey`. |
+
+If the URL ends in **`.convex.site`**, **`blog-admin-serve`** rewrites it to **`.convex.cloud`** (HTTP Actions host vs JS client URL) and prints a warning.
 
 ## Next.js or other browser apps
 

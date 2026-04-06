@@ -48,9 +48,11 @@ This example ships minimal [`convex/_generated/api.js`](./convex/_generated/api.
 Use the same deployment URL as in `.env.local`:
 
 ```bash
-cd ../../packages/convex-blog-cms
-CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud" pnpm exec convex-blog-admin serve
+cd ../..
+NEXT_PUBLIC_CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud" pnpm blog:admin
 ```
+
+(`blog-admin-serve` accepts `NEXT_PUBLIC_CONVEX_URL` or `CONVEX_URL`. You can also run `pnpm blog:admin` from `packages/convex-blog-cms` with the same variables.)
 
 See [examples/convex-host/README.md](../convex-host/README.md) for `BLOG_ADMIN_API_KEY` if you use token auth.
 

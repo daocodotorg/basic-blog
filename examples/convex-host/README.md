@@ -16,14 +16,14 @@ Link or create a Convex project when prompted. This pushes `blog.*` (including `
 
 ## Run the admin UI
 
-Point `convex-blog-admin` at the same deployment URL:
+From the **monorepo root** (easiest):
 
 ```bash
-cd ../../packages/convex-blog-cms
-CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud" pnpm exec convex-blog-admin serve
+cd ../..
+CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud" pnpm blog:admin
 ```
 
-Or from any project that has `basic-blog-convex-blog-cms` installed, with `CONVEX_URL` set to this host’s deployment.
+Or from `packages/convex-blog-cms`: `pnpm blog:admin` with the same env. From any project that depends on this package: `npx blog-admin-serve` (or `npx convex-blog-admin serve`) with `CONVEX_URL` set to this host’s deployment.
 
 ## Copy into your own app
 

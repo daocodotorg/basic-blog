@@ -8,6 +8,7 @@
   },
   "license": "Apache-2.0",
   "scripts": {
+    "blog:admin": "pnpm --filter basic-blog-convex-blog-cms blog:admin",
     "dev": "pnpm --filter basic-blog-convex-blog-cms dev",
     "dev:next": "pnpm --filter @basic-blog/example-next-app dev",
     "build": "pnpm -r build",
