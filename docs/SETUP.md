@@ -1,6 +1,6 @@
-# Setup: install the Convex blog CMS component
+# Setup: integrate the Convex blog CMS component
 
-This guide is for **integrators** adding `basic-blog-convex-blog-cms` to an existing Convex + (optionally) Next.js app. It mirrors [Convex component authoring](https://docs.convex.dev/components/authoring) expectations: install the package, register the component, re-export the host API, and mount HTTP.
+For **application developers** adding **[`basic-blog-convex-blog-cms`](https://www.npmjs.com/package/basic-blog-convex-blog-cms)** to an existing **Convex** backend and optional **Next.js** (or other) frontend. Steps match [Convex component authoring](https://docs.convex.dev/components/authoring): install from npm, register the component in `convex.config`, expose **`makeBlogAdminAPI`** from your `convex/` functions, and mount RSS/sitemap **HTTP** routes on the host.
 
 ## Prerequisites
 

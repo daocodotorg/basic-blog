@@ -1,8 +1,10 @@
 # `basic-blog-convex-blog-cms`
 
-A **Convex component** that provides a small blog/CMS backend (posts, ordered blocks, site settings) plus **client helpers** for wiring admin APIs and Next.js SEO (metadata, JSON-LD, RSS, sitemap). **Rendering is not included**—use hydrated DTOs from public queries and build your own UI, or copy the reference components from `[examples/blog-ui](https://github.com/daocodotorg/basic-blog/tree/main/examples/blog-ui)` in this monorepo.
+**Published npm package:** headless **blog and CMS** on **Convex**—isolated component tables (`posts`, `postBlocks`, `siteSettings`), validated queries and mutations, **Convex file storage** for images, and a **bundled TipTap admin** you run with **`npx convex-blog-admin serve`**.
 
-Designed to match [Convex component authoring](https://docs.convex.dev/components/authoring): isolated tables, validated functions, and npm entry points for `convex.config`, client factories, and tests.
+Also ships **TypeScript helpers** to mount a host API (`makeBlogAdminAPI`) and, optionally, **Next.js** metadata, **RSS**, **sitemap**, and **JSON-LD**. **Public site rendering is your app’s job:** use hydrated DTOs from public queries and your own React (or see the [reference UI](https://github.com/daocodotorg/basic-blog/tree/main/examples/blog-ui) and [Next.js example](https://github.com/daocodotorg/basic-blog/tree/main/examples/next-app) in the repo).
+
+Follows [Convex component authoring](https://docs.convex.dev/components/authoring): `convex.config`, `ComponentApi`, and a `./test` entry for `convex-test`.
 
 ## Install
 

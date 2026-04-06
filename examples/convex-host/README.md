@@ -1,6 +1,6 @@
-# Example Convex host
+# Example: Convex-only host
 
-Minimal runnable **Convex host** for `basic-blog-convex-blog-cms`. [`convex/blog.ts`](./convex/blog.ts) spreads **`makeBlogAdminAPI`**, which exposes **`generateUploadUrl`** on `blog` so the bundled admin can upload images—same auth as saving posts (`BLOG_ADMIN_API_KEY` / `auth`).
+Smallest **runnable** integration of **`basic-blog-convex-blog-cms`**: register the component, spread **`makeBlogAdminAPI`** in [`convex/blog.ts`](./convex/blog.ts) (including **`blog.generateUploadUrl`** for the bundled admin), and optional RSS/sitemap routes in `convex/http.ts`. Same **admin auth** as post writes (`BLOG_ADMIN_API_KEY` and/or your **`auth`** callback).
 
 ## Setup
 

@@ -2,7 +2,7 @@
   "name": "@basic-blog/example-next-app",
   "version": "0.1.0",
   "private": true,
-  "description": "Runnable Next.js App Router example for basic-blog-convex-blog-cms (public blog + Convex host).",
+  "description": "Runnable example: Next.js App Router app using basic-blog-convex-blog-cms — public blog pages, Convex host wiring, reference blog UI components.",
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",

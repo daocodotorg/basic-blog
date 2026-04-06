@@ -1,6 +1,6 @@
 # Contributing
 
-This project follows the [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to uphold it.
+This repository contains the **basic-blog-convex-blog-cms** Convex component (published to npm), its bundled admin, documentation, and examples. Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Prerequisites
 

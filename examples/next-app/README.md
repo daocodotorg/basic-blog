@@ -1,10 +1,10 @@
-# `examples/next-app` — runnable Next.js + blog CMS
+# Example: Next.js + Convex blog CMS
 
-This folder is a **minimal Next.js App Router** app that:
+**Runnable** [**Next.js 16**](https://nextjs.org/) (App Router) demo for **`basic-blog-convex-blog-cms`**:
 
-- Hosts the same Convex **`blog.*` API** as [`examples/convex-host`](../convex-host) (`makeBlogAdminAPI`, RSS/sitemap `http` routes).
-- Renders the public blog with **`fetchQuery`** from `convex/nextjs` ([docs/SETUP.md](../../docs/SETUP.md) §5–6).
-- Embeds a copy of the reference UI from [`examples/blog-ui`](../blog-ui) under [`components/blog-ui`](./components/blog-ui) (`BlogPost`, `BlockRenderer`, `BlogList`).
+- Same Convex **`blog.*` surface** as [`examples/convex-host`](../convex-host): `makeBlogAdminAPI`, RSS/sitemap `http` routes, uploads for the admin.
+- Public pages use **`fetchQuery`** from `convex/nextjs` (see [docs/SETUP.md](../../docs/SETUP.md) for production patterns).
+- Blog UI is a vendored copy of [`examples/blog-ui`](../blog-ui) under [`components/blog-ui`](./components/blog-ui) (`BlogPost`, `BlockRenderer`, `BlogList`).
 
 ## Prerequisites
 

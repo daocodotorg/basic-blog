@@ -1,6 +1,12 @@
 {
   "name": "basic-blog",
   "private": true,
+  "description": "Development monorepo for basic-blog-convex-blog-cms: Convex blog/CMS component (npm), bundled admin + CLI, docs, and runnable examples.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daocodotorg/basic-blog.git"
+  },
+  "license": "Apache-2.0",
   "scripts": {
     "dev": "pnpm --filter basic-blog-convex-blog-cms dev",
     "dev:next": "pnpm --filter @basic-blog/example-next-app dev",

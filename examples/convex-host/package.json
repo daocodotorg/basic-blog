@@ -2,7 +2,7 @@
   "name": "@basic-blog/example-convex-host",
   "version": "0.1.0",
   "private": true,
-  "description": "Minimal Convex host for basic-blog-convex-blog-cms — makeBlogAdminAPI exposes blog.generateUploadUrl for admin uploads.",
+  "description": "Runnable example: Convex-only host for basic-blog-convex-blog-cms (component registration, makeBlogAdminAPI, RSS/sitemap http routes, generateUploadUrl for the bundled admin).",
   "type": "module",
   "scripts": {
     "dev": "convex dev",

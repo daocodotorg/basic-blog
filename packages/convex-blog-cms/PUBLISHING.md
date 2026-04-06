@@ -1,6 +1,6 @@
 # Publishing `basic-blog-convex-blog-cms`
 
-This follows the same ideas as the [Convex component template](https://github.com/get-convex/templates/tree/main/template-component) and [Component authoring — Publishing](https://docs.convex.dev/components/authoring#publishing-to-npm).
+Maintainer guide for the **npm package** [`basic-blog-convex-blog-cms`](https://www.npmjs.com/package/basic-blog-convex-blog-cms). Aligns with the [Convex component template](https://github.com/get-convex/templates/tree/main/template-component) and [Component authoring — Publishing](https://docs.convex.dev/components/authoring#publishing-to-npm).
 
 **Versioning:** The first **stable** line on npm `latest` is **`0.1.0`**. Use **`npm version`** for subsequent releases (`patch` / `minor` / `major` as appropriate). Avoid jumping to `1.0.0` unless you intentionally signal a major API milestone.
 

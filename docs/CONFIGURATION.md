@@ -1,6 +1,6 @@
 # Configuration reference
 
-Single place for environment variables, Convex settings, and integration knobs. For a full walkthrough, see [SETUP.md](./SETUP.md).
+Environment variables, Convex settings, and integration options for **`basic-blog-convex-blog-cms`**. For a full walkthrough, see [SETUP.md](./SETUP.md).
 
 ## Convex (deployment)
 

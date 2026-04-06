@@ -1,6 +1,6 @@
-# `examples/blog-ui` — reference UI (not on npm)
+# Example: reference blog UI (not published to npm)
 
-Reference **React** components for rendering blog DTOs from `basic-blog-convex-blog-cms`. This directory is for **learning and copy-paste** — it is **`private`** to the monorepo and **not** published as a package.
+**React** components for rendering **`PostDTO` / `BlockDTO`** from **`basic-blog-convex-blog-cms`**. Use this tree to **learn** or **copy** into your app; the **`@basic-blog/example-blog-ui`** workspace package is **private** and does **not** ship on npm (unlike **`basic-blog-convex-blog-cms`**).
 
 ## Contents
 

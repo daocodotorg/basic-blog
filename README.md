@@ -1,6 +1,6 @@
-# Basic Blog — Convex CMS component (v1)
+# Basic Blog — Convex blog CMS component
 
-Monorepo with a publishable Convex **component** package (`basic-blog-convex-blog-cms`), a **bundled admin UI** served by `convex-blog-admin serve`, and **reference** docs and examples.
+Source repository for [**basic-blog-convex-blog-cms**](https://www.npmjs.com/package/basic-blog-convex-blog-cms) on npm: a **Convex component** for a small headless blog/CMS (posts, blocks, site settings, uploads), a **bundled admin** served via the **`convex-blog-admin`** CLI, integration **docs**, and **examples** you can run from this tree.
 
 ## Documentation
 
@@ -18,18 +18,23 @@ Convex component expectations are described in the official [Component authoring
 
 Questions and ideas about this component are welcome: open a [GitHub issue](https://github.com/daocodotorg/basic-blog/issues) or chat with the Convex community in the **[#components](https://discord.com/channels/1019350475847499846/1310320808782311555)** channel on Discord (linked from [Components Authoring](https://www.convex.dev/component-authoring)). Pull requests should follow [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Packages
+## Packages and examples
 
-- [`packages/convex-blog-cms`](packages/convex-blog-cms) — `basic-blog-convex-blog-cms`
-  - Convex tables: `siteSettings`, `posts`, `postBlocks`
-  - `makeBlogAdminAPI` for host wiring
-  - Exports: `./convex.config`, `./client`, `./next`, `./test` (no React blog UI in the package; see `examples/blog-ui`)
-  - SEO helpers: `resolvePrimaryImage`, JSON-LD, RSS XML, sitemap + image sitemap
-  - CLI `convex-blog-admin` serves the bundled admin SPA from `dist/admin-spa`
+- **[`packages/convex-blog-cms`](packages/convex-blog-cms)** (`basic-blog-convex-blog-cms` on npm) — the **published** Convex component and client helpers.
+  - Data: `siteSettings`, `posts`, `postBlocks`
+  - Host wiring: `makeBlogAdminAPI` (re-export queries/mutations in your app’s `convex/`)
+  - Entry points: `./convex.config`, root client, `./next`, `./test`, `./_generated/component`
+  - Visitor-facing **React UI is not in the npm bundle**; copy from `examples/blog-ui` or use `examples/next-app`
+  - SEO: `resolvePrimaryImage`, JSON-LD, RSS and sitemap XML builders (mounted on the host)
+  - **Admin:** prebuilt SPA in `dist/admin-spa`, served by `npx convex-blog-admin serve`
 
-- [`docs/reference/convex-host`](docs/reference/convex-host) — copy-paste **sample** Convex host files (`blog.ts`, `http.ts`, `schema.ts`, `convex.config.ts`) for integration.
+- **[`docs/reference/convex-host`](docs/reference/convex-host)** — **copy-paste** Convex snippets (`blog.ts`, `http.ts`, `schema.ts`, `convex.config.ts`) for your repo.
 
-- [`examples/convex-host`](examples/convex-host) — **runnable** minimal host; run `npx convex dev` there after `pnpm install`. `makeBlogAdminAPI` exposes `blog.generateUploadUrl` for the bundled admin (same auth as saving posts).
+- **[`examples/convex-host`](examples/convex-host)** — **smallest runnable host** (Convex only). Use it to try the component and admin without Next.js.
+
+- **[`examples/next-app`](examples/next-app)** — **Next.js App Router** demo: public blog pages, same Convex host patterns, embedded reference UI.
+
+- **[`examples/blog-ui`](examples/blog-ui)** — **reference** React components for rendering DTOs (not published to npm).
 
 ## Quick start (try the admin UI)
 
@@ -69,14 +74,15 @@ Example RSS and sitemap handlers live in [`docs/reference/convex-host/convex/htt
 
 | Command | Description |
 |--------|-------------|
-| `pnpm test` | Component + SEO unit tests (package) |
-| `pnpm --filter basic-blog-convex-blog-cms run build` | Build the CMS package (includes admin SPA) |
+| `pnpm test` | Component and SEO unit tests for the CMS package |
+| `pnpm --filter basic-blog-convex-blog-cms run build` | Build the npm package (TypeScript + bundled admin SPA) |
+| `pnpm dev:next` | Dev server for `examples/next-app` (after Convex is configured there) |
 
 ## Monorepo development
 
 ```bash
 pnpm install
-pnpm dev   # runs basic-blog-convex-blog-cms dev (component + admin SPA)
+pnpm dev   # Convex component codegen/watch + admin SPA (CMS package)
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for codegen order and PR checks.
