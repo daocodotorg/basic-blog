@@ -8,12 +8,8 @@ Set with `npx convex env set NAME value` (or the Convex dashboard).
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `DEMO_ADMIN_MODE` | For demo admin only | Set to `true` to allow `makeBlogAdminAPI` admin read/write paths used by the sample app. **Do not enable in production** without replacing auth. |
-| `R2_TOKEN` | If using R2 | Cloudflare R2 API token ([R2 component](https://www.convex.dev/components/cloudflare-r2)). |
-| `R2_ACCESS_KEY_ID` | If using R2 | R2 S3-compatible access key. |
-| `R2_SECRET_ACCESS_KEY` | If using R2 | R2 secret. |
-| `R2_ENDPOINT` | If using R2 | R2 endpoint URL. |
-| `R2_BUCKET` | If using R2 | Bucket name. |
+| `BLOG_ADMIN_API_KEY` | Optional | If set, admin API calls must include matching `adminApiKey` (see package README). Same value as `NEXT_PUBLIC_BLOG_ADMIN_API_KEY` in the sample Next app for token auth. **Not for production** as primary security; use Convex Auth. |
+| `DEMO_ADMIN_MODE` | Optional | Set to `true` to allow the sample app’s `media.generateUploadUrl` (Convex file storage uploads). **Do not enable in production** without replacing with proper auth. |
 
 ## Next.js (admin app)
 
@@ -22,15 +18,18 @@ Use `apps/admin/.env.local` (copy from [`apps/admin/.env.local.example`](../apps
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `NEXT_PUBLIC_CONVEX_URL` | Yes | HTTPS URL of your Convex deployment (from `pnpm exec convex dev`). |
+| `NEXT_PUBLIC_BLOG_ADMIN_API_KEY` | With token auth | Must match `BLOG_ADMIN_API_KEY` when using the sample admin’s simple token flow. Exposed to the browser. |
 
 ## Host app: `makeBlogAdminAPI` auth
 
-The package does **not** call `ctx.auth` inside the component. Your host [`convex/blog.ts`](../apps/admin/convex/blog.ts) must pass an `auth` callback:
+The package does **not** call `ctx.auth` inside the component. Your host [`convex/blog.ts`](../apps/admin/convex/blog.ts) configures `makeBlogAdminAPI` with either:
 
-- **`adminRead`** / **`adminWrite`**: enforce your rules (session, JWT, role, etc.).
-- Public queries (`getPublishedPostBySlug`, `listPublishedPosts`, `getPublicSiteSettings`) are exported without admin auth.
+- **`adminApiKeySecret`** (e.g. `process.env.BLOG_ADMIN_API_KEY`): admin calls include `adminApiKey` matching this value; `auth` is not used when the key matches.
+- **`auth`**: when `adminApiKeySecret` is unset, use **`adminRead`** / **`adminWrite`** to enforce Convex Auth, sessions, or roles.
 
-Replace the demo `DEMO_ADMIN_MODE` check before shipping.
+Public queries (`getPublishedPostBySlug`, `listPublishedPosts`, `getPublicSiteSettings`) never use these paths.
+
+Replace token auth with real `auth` before shipping to production.
 
 ## Component instance name
 

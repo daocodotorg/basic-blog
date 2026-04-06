@@ -2,8 +2,9 @@ import { makeBlogAdminAPI } from "@basic-blog/convex-blog-cms";
 import { components } from "./_generated/api.js";
 
 /**
- * Demo-only: set `DEMO_ADMIN_MODE=true` in Convex env to enable admin mutations/queries.
- * Do not use in production.
+ * Simple token auth (demo): set the same secret in Convex (`BLOG_ADMIN_API_KEY`) and in Next
+ * (`NEXT_PUBLIC_BLOG_ADMIN_API_KEY`). For production, remove those env vars and implement `auth`
+ * with Convex Auth or similar (see package README).
  */
 export const {
   getPublishedPostBySlug,
@@ -19,14 +20,10 @@ export const {
   replacePostBlocks,
   upsertSiteSettings,
 } = makeBlogAdminAPI(components.blogCms, {
-  auth: async (_ctx, op) => {
-    if (process.env.DEMO_ADMIN_MODE === "true") {
-      return;
-    }
-    if (op.type === "adminRead" || op.type === "adminWrite") {
-      throw new Error(
-        "Admin API disabled. For local demo: `npx convex env set DEMO_ADMIN_MODE true`",
-      );
-    }
+  adminApiKeySecret: process.env.BLOG_ADMIN_API_KEY,
+  auth: async (_ctx, _op) => {
+    throw new Error(
+      "Admin API disabled. Set BLOG_ADMIN_API_KEY in Convex and NEXT_PUBLIC_BLOG_ADMIN_API_KEY in .env.local, or replace this callback with real auth (see README).",
+    );
   },
 });

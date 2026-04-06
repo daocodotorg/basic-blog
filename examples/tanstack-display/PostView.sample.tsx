@@ -1,21 +1,37 @@
 "use client";
 
-import type { BlockDTO } from "../seo/types.js";
+/**
+ * TanStack Router / SPA sample — standalone block renderer (not the same as examples/blog-ui BlockRenderer).
+ *
+ * Sample: render hydrated blocks from @basic-blog/convex-blog-cms (no package React UI).
+ * Wire `useQuery(api.blog.getPublishedPostBySlug, { slug })` in your route component.
+ */
+import type { BlockDTO } from "@basic-blog/convex-blog-cms/next";
 
-export function BlockRenderer(props: { blocks: Array<{ order: number; block: BlockDTO }> }) {
+export function PostView(props: {
+  title: string;
+  authorName?: string;
+  blocks: Array<{ order: number; block: BlockDTO }>;
+}) {
   const sorted = [...props.blocks].sort((a, b) => a.order - b.order);
   return (
-    <div className="convex-blog-blocks space-y-4">
-      {sorted.map((row, i) => (
-        <Block key={i} block={row.block} />
-      ))}
-    </div>
+    <article className="prose max-w-3xl">
+      <header>
+        <h1>{props.title}</h1>
+        {props.authorName ? <p className="text-sm text-neutral-500">By {props.authorName}</p> : null}
+      </header>
+      <div className="space-y-4">
+        {sorted.map((row, i) => (
+          <Block key={i} block={row.block} />
+        ))}
+      </div>
+    </article>
   );
 }
 
 function Heading(props: { level: number; text: string }) {
   const level = Math.min(6, Math.max(1, props.level));
-  const className = "convex-blog-heading font-semibold";
+  const className = "font-semibold";
   switch (level) {
     case 1:
       return <h1 className={className}>{props.text}</h1>;
@@ -36,12 +52,12 @@ function Block(props: { block: BlockDTO }) {
   const b = props.block;
   switch (b.type) {
     case "paragraph":
-      return <p className="convex-blog-paragraph whitespace-pre-wrap">{b.text}</p>;
+      return <p className="whitespace-pre-wrap">{b.text}</p>;
     case "heading":
       return <Heading level={b.level} text={b.text} />;
     case "image":
       return (
-        <figure className="convex-blog-image">
+        <figure>
           <img
             src={b.url}
             alt={b.alt}
@@ -53,16 +69,9 @@ function Block(props: { block: BlockDTO }) {
       );
     case "video":
       return (
-        <figure className="convex-blog-video">
-          <video
-            src={b.url}
-            poster={b.poster}
-            controls
-            className="max-w-full rounded"
-          />
-          {b.caption ? (
-            <figcaption className="text-sm text-neutral-500">{b.caption}</figcaption>
-          ) : null}
+        <figure>
+          <video src={b.url} poster={b.poster} controls className="max-w-full rounded" />
+          {b.caption ? <figcaption className="text-sm text-neutral-500">{b.caption}</figcaption> : null}
         </figure>
       );
     case "link":

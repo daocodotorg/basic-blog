@@ -5,27 +5,20 @@ This follows the same ideas as the [Convex component template](https://github.co
 ## Before you publish
 
 1. **Login to npm** (one-time):
-
-   ```bash
+  ```bash
    npm whoami || npm login
-   ```
-
+  ```
 2. **Version** the package (from `packages/convex-blog-cms`):
-
-   ```bash
+  ```bash
    npm version patch   # or minor / major
-   ```
-
+  ```
 3. **Build and test**:
-
-   ```bash
+  ```bash
    npm run build:clean
    npm test
-   ```
-
+  ```
    If you have `CONVEX_DEPLOYMENT` set, `build:codegen` can regenerate `src/component/_generated`. Otherwise ensure generated files are committed or produced by your CI.
-
-4. **Verify `files`**: [`package.json`](./package.json) publishes `dist` and `src` so consumers get source maps and the component tree.
+4. **Verify `files`**: `[package.json](./package.json)` publishes `dist` and `src` so consumers get source maps and the component tree.
 
 ## Publish
 

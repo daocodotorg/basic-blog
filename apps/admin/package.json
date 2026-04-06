@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@basic-blog/convex-blog-cms": "workspace:*",
-    "@convex-dev/r2": "^0.8.0",
+    "@basic-blog/example-blog-ui": "workspace:*",
     "convex": "^1.33.1",
     "next": "16.2.2",
     "react": "19.2.4",

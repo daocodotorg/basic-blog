@@ -150,8 +150,11 @@ export const updatePost = mutation({
       metaDescription: v.optional(v.string()),
       canonicalPath: v.optional(v.string()),
       ogImageUrl: v.optional(v.string()),
+      ogImageStorageId: v.optional(v.id("_storage")),
       twitterImageUrl: v.optional(v.string()),
+      twitterImageStorageId: v.optional(v.id("_storage")),
       featuredImageUrl: v.optional(v.string()),
+      featuredImageStorageId: v.optional(v.id("_storage")),
       noindex: v.optional(v.boolean()),
       answerSummary: v.optional(v.string()),
       keyTakeaways: v.optional(v.array(v.string())),
@@ -174,7 +177,31 @@ export const updatePost = mutation({
     if (args.patch.slug !== undefined && args.patch.slug !== existing.slug) {
       await requireUniqueSlug(ctx, args.patch.slug, args.postId);
     }
-    await ctx.db.patch("posts", args.postId, args.patch);
+    const patch = { ...args.patch };
+    const resolveImagePair = (
+      urlKey: "ogImageUrl" | "twitterImageUrl" | "featuredImageUrl",
+      sidKey:
+        | "ogImageStorageId"
+        | "twitterImageStorageId"
+        | "featuredImageStorageId",
+    ) => {
+      const sid = patch[sidKey];
+      const u = patch[urlKey];
+      if (sid !== undefined) {
+        patch[urlKey] = undefined;
+        return;
+      }
+      if (u === "") {
+        patch[urlKey] = undefined;
+        patch[sidKey] = undefined;
+      } else if (u !== undefined && u !== "") {
+        patch[sidKey] = undefined;
+      }
+    };
+    resolveImagePair("ogImageUrl", "ogImageStorageId");
+    resolveImagePair("twitterImageUrl", "twitterImageStorageId");
+    resolveImagePair("featuredImageUrl", "featuredImageStorageId");
+    await ctx.db.patch("posts", args.postId, patch);
     return null;
   },
 });
@@ -261,6 +288,7 @@ export const upsertSiteSettings = mutation({
     siteName: v.string(),
     baseUrl: v.string(),
     defaultOgImageUrl: v.optional(v.string()),
+    defaultOgImageStorageId: v.optional(v.id("_storage")),
     locale: v.optional(v.string()),
     defaultRobots: v.optional(v.string()),
   },
@@ -270,23 +298,30 @@ export const upsertSiteSettings = mutation({
       .query("siteSettings")
       .withIndex("by_key", (q) => q.eq("key", "default"))
       .unique();
+    const defaultOgImageUrl =
+      args.defaultOgImageUrl !== undefined && args.defaultOgImageUrl !== "" ?
+        args.defaultOgImageUrl
+      : undefined;
+    const defaultOgImageStorageId =
+      args.defaultOgImageStorageId !== undefined ?
+        args.defaultOgImageStorageId
+      : undefined;
+    const payload = {
+      siteName: args.siteName,
+      baseUrl: args.baseUrl,
+      defaultOgImageUrl,
+      defaultOgImageStorageId:
+        defaultOgImageUrl !== undefined ? undefined : defaultOgImageStorageId,
+      locale: args.locale,
+      defaultRobots: args.defaultRobots,
+    };
     if (row) {
-      await ctx.db.patch("siteSettings", row._id, {
-        siteName: args.siteName,
-        baseUrl: args.baseUrl,
-        defaultOgImageUrl: args.defaultOgImageUrl,
-        locale: args.locale,
-        defaultRobots: args.defaultRobots,
-      });
+      await ctx.db.patch("siteSettings", row._id, payload);
       return row._id;
     }
     return await ctx.db.insert("siteSettings", {
       key: "default",
-      siteName: args.siteName,
-      baseUrl: args.baseUrl,
-      defaultOgImageUrl: args.defaultOgImageUrl,
-      locale: args.locale,
-      defaultRobots: args.defaultRobots,
+      ...payload,
     });
   },
 });

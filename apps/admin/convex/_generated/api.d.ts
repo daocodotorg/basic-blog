@@ -1,6 +1,6 @@
 /* eslint-disable */
 import type * as blog from "../blog.js";
-import type * as r2 from "../r2.js";
+import type * as media from "../media.js";
 import type {
   ApiFromModules,
   FilterApi,
@@ -10,7 +10,7 @@ import type { ComponentApi as BlogCmsComponentApi } from "@basic-blog/convex-blo
 
 declare const fullApi: ApiFromModules<{
   blog: typeof blog;
-  r2: typeof r2;
+  media: typeof media;
 }>;
 
 export declare const api: FilterApi<
@@ -25,5 +25,4 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   blogCms: BlogCmsComponentApi<"blogCms">;
-  r2: Record<string, unknown>;
 };

@@ -12,9 +12,18 @@ export const blockValidator = v.union(
     level: v.number(),
     text: v.string(),
   }),
+  /** External image (HTTPS URL). */
   v.object({
     type: v.literal("image"),
     url: v.string(),
+    alt: v.string(),
+    width: v.optional(v.number()),
+    height: v.optional(v.number()),
+  }),
+  /** Convex file storage — URL resolved at read time in the host app. */
+  v.object({
+    type: v.literal("image"),
+    storageId: v.id("_storage"),
     alt: v.string(),
     width: v.optional(v.number()),
     height: v.optional(v.number()),
@@ -40,6 +49,7 @@ export default defineSchema({
     siteName: v.string(),
     baseUrl: v.string(),
     defaultOgImageUrl: v.optional(v.string()),
+    defaultOgImageStorageId: v.optional(v.id("_storage")),
     locale: v.optional(v.string()),
     defaultRobots: v.optional(v.string()),
   }).index("by_key", ["key"]),
@@ -55,8 +65,11 @@ export default defineSchema({
     metaDescription: v.optional(v.string()),
     canonicalPath: v.optional(v.string()),
     ogImageUrl: v.optional(v.string()),
+    ogImageStorageId: v.optional(v.id("_storage")),
     twitterImageUrl: v.optional(v.string()),
+    twitterImageStorageId: v.optional(v.id("_storage")),
     featuredImageUrl: v.optional(v.string()),
+    featuredImageStorageId: v.optional(v.id("_storage")),
     noindex: v.optional(v.boolean()),
     answerSummary: v.optional(v.string()),
     keyTakeaways: v.optional(v.array(v.string())),

@@ -3,13 +3,14 @@
 import { useMutation, useQuery } from "convex/react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../../../convex/_generated/api";
-import { BlogPost } from "@basic-blog/convex-blog-cms/react";
-import {
-  resolvePrimaryImage,
-} from "@basic-blog/convex-blog-cms/next";
-import type { BlockDTO } from "@basic-blog/convex-blog-cms/react";
+import type { Id } from "../../../../convex/_generated/dataModel";
+import { withAdminApiKey } from "@/lib/adminApiKey";
+import { BlogPost } from "@basic-blog/example-blog-ui";
+import { resolvePrimaryImage } from "@basic-blog/convex-blog-cms/next";
+import type { BlockDTO, PostDTO } from "@basic-blog/convex-blog-cms/next";
+import type { BlockStored } from "@basic-blog/convex-blog-cms";
 
 type AdminPostBundle = {
   post: {
@@ -24,20 +25,41 @@ type AdminPostBundle = {
     metaDescription?: string;
     canonicalPath?: string;
     ogImageUrl?: string;
+    ogImageStorageId?: string;
     twitterImageUrl?: string;
+    twitterImageStorageId?: string;
     featuredImageUrl?: string;
+    featuredImageStorageId?: string;
     noindex?: boolean;
     answerSummary?: string;
     keyTakeaways?: string[];
     faq?: Array<{ question: string; answer: string }>;
   };
-  blocks: Array<{ order: number; block: BlockDTO }>;
+  blocks: Array<{ order: number; block: BlockStored }>;
+  hydratedPost: PostDTO;
+  hydratedBlocks: Array<{ order: number; block: BlockDTO }>;
 };
+
+async function uploadFileToConvex(
+  uploadUrl: string,
+  file: File,
+): Promise<string> {
+  const res = await fetch(uploadUrl, {
+    method: "POST",
+    headers: { "Content-Type": file.type || "application/octet-stream" },
+    body: file,
+  });
+  if (!res.ok) {
+    throw new Error(`Upload failed: ${res.status}`);
+  }
+  const json = (await res.json()) as { storageId: string };
+  return json.storageId;
+}
 
 export default function EditPostPage() {
   const params = useParams<{ slug: string }>();
   const slug = decodeURIComponent(params.slug);
-  const data = useQuery(api.blog.getPostForAdmin, { slug }) as
+  const data = useQuery(api.blog.getPostForAdmin, withAdminApiKey({ slug })) as
     | AdminPostBundle
     | null
     | undefined;
@@ -56,75 +78,88 @@ export default function EditPostPage() {
   const publishPost = useMutation(api.blog.publishPost);
   const unpublishPost = useMutation(api.blog.unpublishPost);
   const deletePost = useMutation(api.blog.deletePost);
+  const generateUploadUrl = useMutation(api.media.generateUploadUrl);
+
+  const imageFileRef = useRef<HTMLInputElement>(null);
+  const ogFileRef = useRef<HTMLInputElement>(null);
 
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
   const [ogImageUrl, setOgImageUrl] = useState("");
+  const [ogImageStorageId, setOgImageStorageId] = useState<Id<"_storage"> | null>(
+    null,
+  );
   const [paragraph, setParagraph] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [imageAlt, setImageAlt] = useState("");
+  const [uploadBusy, setUploadBusy] = useState(false);
 
   const blocks = useMemo(() => data?.blocks ?? [], [data]);
+  const hydratedBlocks = useMemo(
+    () => data?.hydratedBlocks ?? [],
+    [data],
+  );
 
   useEffect(() => {
     if (data?.post) {
       setMetaTitle(data.post.metaTitle ?? data.post.title);
       setMetaDescription(data.post.metaDescription ?? "");
       setOgImageUrl(data.post.ogImageUrl ?? "");
+      setOgImageStorageId(
+        (data.post.ogImageStorageId as Id<"_storage"> | undefined) ?? null,
+      );
     }
   }, [data]);
 
-  const primary = useMemo(() => {
-    if (!data?.post || !settings) {
+  const previewPost = useMemo((): PostDTO | null => {
+    if (!data?.hydratedPost) {
       return null;
     }
-    return resolvePrimaryImage(
-      {
-        slug: data.post.slug,
-        title: data.post.title,
-        status: data.post.status,
-        publishedAt: data.post.publishedAt,
-        authorName: data.post.authorName,
-        excerpt: data.post.excerpt,
-        metaTitle: data.post.metaTitle,
-        metaDescription: data.post.metaDescription,
-        canonicalPath: data.post.canonicalPath,
-        ogImageUrl: data.post.ogImageUrl,
-        twitterImageUrl: data.post.twitterImageUrl,
-        featuredImageUrl: data.post.featuredImageUrl,
-        noindex: data.post.noindex,
-        answerSummary: data.post.answerSummary,
-        keyTakeaways: data.post.keyTakeaways,
-        faq: data.post.faq,
-      },
-      blocks,
-      {
-        siteName: settings.siteName,
-        baseUrl: settings.baseUrl,
-        defaultOgImageUrl: settings.defaultOgImageUrl,
-        locale: settings.locale,
-        defaultRobots: settings.defaultRobots,
-      },
-    );
-  }, [data, blocks, settings]);
+    const base = data.hydratedPost;
+    const og =
+      ogImageStorageId ? base.ogImageUrl
+      : ogImageUrl.trim() !== "" ? ogImageUrl.trim()
+      : base.ogImageUrl;
+    return {
+      ...base,
+      metaTitle: metaTitle || base.metaTitle,
+      metaDescription: metaDescription || base.metaDescription,
+      ogImageUrl: og,
+    };
+  }, [
+    data,
+    metaTitle,
+    metaDescription,
+    ogImageUrl,
+    ogImageStorageId,
+  ]);
+
+  const primary = useMemo(() => {
+    if (!previewPost || !settings) {
+      return null;
+    }
+    return resolvePrimaryImage(previewPost, hydratedBlocks, settings);
+  }, [previewPost, hydratedBlocks, settings]);
 
   async function addParagraph() {
     if (!data?.post || !paragraph.trim()) {
       return;
     }
-    const next: Array<{ order: number; block: BlockDTO }> = [
+    const next: Array<{ order: number; block: BlockStored }> = [
       ...blocks.map((b, i) => ({ order: i, block: b.block })),
       { order: blocks.length, block: { type: "paragraph", text: paragraph } },
     ];
-    await replaceBlocks({ postId: data.post._id, blocks: next });
+    await replaceBlocks(
+      withAdminApiKey({ postId: data.post._id, blocks: next as never }),
+    );
     setParagraph("");
   }
 
-  async function addImage() {
+  async function addImageFromUrl() {
     if (!data?.post || !imageUrl.trim()) {
       return;
     }
-    const next: Array<{ order: number; block: BlockDTO }> = [
+    const next: Array<{ order: number; block: BlockStored }> = [
       ...blocks.map((b, i) => ({ order: i, block: b.block })),
       {
         order: blocks.length,
@@ -135,9 +170,72 @@ export default function EditPostPage() {
         },
       },
     ];
-    await replaceBlocks({ postId: data.post._id, blocks: next });
+    await replaceBlocks(
+      withAdminApiKey({ postId: data.post._id, blocks: next as never }),
+    );
     setImageUrl("");
     setImageAlt("");
+  }
+
+  async function addImageFromFile(file: File) {
+    if (!data?.post || !file.size) {
+      return;
+    }
+    setUploadBusy(true);
+    try {
+      const uploadUrl = await generateUploadUrl();
+      const storageId = (await uploadFileToConvex(
+        uploadUrl,
+        file,
+      )) as Id<"_storage">;
+      const next: Array<{ order: number; block: BlockStored }> = [
+        ...blocks.map((b, i) => ({ order: i, block: b.block })),
+        {
+          order: blocks.length,
+          block: {
+            type: "image",
+            storageId: storageId,
+            alt: imageAlt.trim() || "Image",
+          },
+        },
+      ];
+      await replaceBlocks(
+        withAdminApiKey({ postId: data.post._id, blocks: next as never }),
+      );
+      setImageAlt("");
+    } finally {
+      setUploadBusy(false);
+      if (imageFileRef.current) {
+        imageFileRef.current.value = "";
+      }
+    }
+  }
+
+  async function onOgFile(file: File) {
+    if (!data?.post || !file.size) {
+      return;
+    }
+    setUploadBusy(true);
+    try {
+      const uploadUrl = await generateUploadUrl();
+      const storageId = (await uploadFileToConvex(
+        uploadUrl,
+        file,
+      )) as Id<"_storage">;
+      setOgImageStorageId(storageId);
+      setOgImageUrl("");
+      await updatePost(
+        withAdminApiKey({
+          postId: data.post._id,
+          patch: { ogImageStorageId: storageId },
+        }),
+      );
+    } finally {
+      setUploadBusy(false);
+      if (ogFileRef.current) {
+        ogFileRef.current.value = "";
+      }
+    }
   }
 
   if (data === undefined || settings === undefined) {
@@ -151,7 +249,9 @@ export default function EditPostPage() {
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6 lg:flex-row">
       <div className="flex-1 space-y-4">
         <div className="rounded border border-amber-400 bg-amber-50 p-3 text-xs text-amber-950">
-          Demo admin — requires <code className="font-mono">DEMO_ADMIN_MODE=true</code> on Convex.
+          Demo admin — set <code className="font-mono">BLOG_ADMIN_API_KEY</code> (Convex) and{" "}
+          <code className="font-mono">NEXT_PUBLIC_BLOG_ADMIN_API_KEY</code> (Next). Enable{" "}
+          <code className="font-mono">DEMO_ADMIN_MODE</code> in Convex for file uploads.
         </div>
         <Link href="/admin" className="text-sm text-blue-600 underline">
           ← Back
@@ -162,14 +262,18 @@ export default function EditPostPage() {
           <button
             type="button"
             className="rounded bg-emerald-700 px-3 py-1.5 text-sm text-white"
-            onClick={() => publishPost({ postId: data.post._id })}
+            onClick={() =>
+              publishPost(withAdminApiKey({ postId: data.post._id }))
+            }
           >
             Publish
           </button>
           <button
             type="button"
             className="rounded bg-zinc-200 px-3 py-1.5 text-sm"
-            onClick={() => unpublishPost({ postId: data.post._id })}
+            onClick={() =>
+              unpublishPost(withAdminApiKey({ postId: data.post._id }))
+            }
           >
             Unpublish
           </button>
@@ -177,7 +281,9 @@ export default function EditPostPage() {
             type="button"
             className="rounded bg-red-600 px-3 py-1.5 text-sm text-white"
             onClick={async () => {
-              await deletePost({ postId: data.post._id });
+              await deletePost(
+                withAdminApiKey({ postId: data.post._id }),
+              );
               window.location.href = "/admin";
             }}
           >
@@ -189,14 +295,21 @@ export default function EditPostPage() {
           className="space-y-3 rounded border border-zinc-200 bg-white p-4"
           onSubmit={async (e) => {
             e.preventDefault();
-            await updatePost({
-              postId: data.post._id,
-              patch: {
-                metaTitle: metaTitle || undefined,
-                metaDescription: metaDescription || undefined,
-                ogImageUrl: ogImageUrl || undefined,
-              },
-            });
+            await updatePost(
+              withAdminApiKey({
+                postId: data.post._id,
+                patch: {
+                  metaTitle: metaTitle || undefined,
+                  metaDescription: metaDescription || undefined,
+                  ...(ogImageStorageId ?
+                    { ogImageStorageId: ogImageStorageId as Id<"_storage"> }
+                  : {
+                      ogImageUrl:
+                        ogImageUrl.trim() === "" ? "" : ogImageUrl.trim() || undefined,
+                    }),
+                },
+              }),
+            );
           }}
         >
           <label className="flex flex-col gap-1 text-sm">
@@ -217,13 +330,44 @@ export default function EditPostPage() {
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            OG image URL (optional override)
+            OG image URL (optional — external HTTPS)
             <input
               className="rounded border border-zinc-300 px-2 py-1"
               value={ogImageUrl}
-              onChange={(e) => setOgImageUrl(e.target.value)}
+              onChange={(e) => {
+                setOgImageUrl(e.target.value);
+                setOgImageStorageId(null);
+              }}
+              placeholder="https://…"
             />
           </label>
+          {ogImageStorageId ? (
+            <p className="text-xs text-zinc-600">
+              Using uploaded OG image (Convex storage). Choose a file below to replace, or clear the URL field and save to switch to URL-only.
+            </p>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              ref={ogFileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) {
+                  void onOgFile(f);
+                }
+              }}
+            />
+            <button
+              type="button"
+              className="rounded border border-zinc-300 px-2 py-1 text-sm"
+              disabled={uploadBusy}
+              onClick={() => ogFileRef.current?.click()}
+            >
+              Upload OG image (Convex)
+            </button>
+          </div>
           <button
             type="submit"
             className="rounded bg-zinc-900 px-3 py-1.5 text-sm text-white"
@@ -237,8 +381,14 @@ export default function EditPostPage() {
           <ul className="space-y-1 text-sm text-zinc-600">
             {blocks.map((b, i) => (
               <li key={i}>
-                {b.block.type}:{" "}
-                {b.block.type === "paragraph" ? b.block.text.slice(0, 80) : "…"}
+                {b.block.type}
+                {b.block.type === "paragraph" ? `: ${b.block.text.slice(0, 80)}` : null}
+                {b.block.type === "heading" ? `: ${b.block.text.slice(0, 80)}` : null}
+                {b.block.type === "image" ?
+                  "storageId" in b.block ?
+                    " (Convex storage)"
+                  : `: ${b.block.url.slice(0, 60)}…`
+                : null}
               </li>
             ))}
           </ul>
@@ -259,7 +409,8 @@ export default function EditPostPage() {
           </div>
           <div className="mt-4 flex flex-col gap-2 border-t border-zinc-100 pt-4">
             <p className="text-sm text-zinc-600">
-              Image block (HTTPS URL — upload via R2 separately, then paste public URL)
+              Image block: paste an external HTTPS URL, or upload to Convex storage (requires{" "}
+              <code className="font-mono text-xs">DEMO_ADMIN_MODE</code>).
             </p>
             <input
               className="rounded border border-zinc-300 px-2 py-1 text-sm"
@@ -273,13 +424,35 @@ export default function EditPostPage() {
               value={imageAlt}
               onChange={(e) => setImageAlt(e.target.value)}
             />
-            <button
-              type="button"
-              className="w-fit rounded bg-zinc-900 px-3 py-1.5 text-sm text-white"
-              onClick={() => addImage()}
-            >
-              Add image block
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="w-fit rounded bg-zinc-900 px-3 py-1.5 text-sm text-white"
+                onClick={() => addImageFromUrl()}
+              >
+                Add image (URL)
+              </button>
+              <input
+                ref={imageFileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) {
+                    void addImageFromFile(f);
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="w-fit rounded border border-zinc-300 px-3 py-1.5 text-sm"
+                disabled={uploadBusy}
+                onClick={() => imageFileRef.current?.click()}
+              >
+                Upload image (Convex)
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -299,29 +472,11 @@ export default function EditPostPage() {
         ) : (
           <p className="text-sm text-zinc-500">No primary image resolved.</p>
         )}
-        <div className="rounded border border-zinc-200 bg-white p-3">
-          <BlogPost
-            post={{
-              slug: data.post.slug,
-              title: data.post.title,
-              status: data.post.status,
-              publishedAt: data.post.publishedAt,
-              authorName: data.post.authorName,
-              excerpt: data.post.excerpt,
-              metaTitle: metaTitle || data.post.metaTitle,
-              metaDescription: metaDescription || data.post.metaDescription,
-              canonicalPath: data.post.canonicalPath,
-              ogImageUrl: ogImageUrl || data.post.ogImageUrl,
-              twitterImageUrl: data.post.twitterImageUrl,
-              featuredImageUrl: data.post.featuredImageUrl,
-              noindex: data.post.noindex,
-              answerSummary: data.post.answerSummary,
-              keyTakeaways: data.post.keyTakeaways,
-              faq: data.post.faq,
-            }}
-            blocks={blocks}
-          />
-        </div>
+        {previewPost ? (
+          <div className="rounded border border-zinc-200 bg-white p-3">
+            <BlogPost post={previewPost} blocks={hydratedBlocks} />
+          </div>
+        ) : null}
       </aside>
     </div>
   );

@@ -33,10 +33,6 @@
       "types": "./dist/client/index.d.ts",
       "default": "./dist/client/index.js"
     },
-    "./react": {
-      "types": "./dist/react/index.d.ts",
-      "default": "./dist/react/index.js"
-    },
     "./next": {
       "types": "./dist/next/index.d.ts",
       "default": "./dist/next/index.js"
@@ -59,8 +55,7 @@
   },
   "peerDependencies": {
     "convex": "^1.33.1",
-    "next": "^14.0.0 || ^15.0.0 || ^16.0.0",
-    "react": "^18.3.1 || ^19.0.0"
+    "next": "^14.0.0 || ^15.0.0 || ^16.0.0"
   },
   "peerDependenciesMeta": {
     "next": { "optional": true }

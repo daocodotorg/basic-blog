@@ -7,6 +7,7 @@ Monorepo with a publishable Convex **component** package and a **Next.js App Rou
 | Doc | Audience |
 |-----|----------|
 | [docs/SETUP.md](docs/SETUP.md) | **Integrators** — install package, register component, wire `makeBlogAdminAPI`, HTTP, Next |
+| [docs/RENDERING.md](docs/RENDERING.md) | **Integrators** — DTOs, queries, optional example UI (`examples/blog-ui`) |
 | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | **Reference** — env vars, auth, component naming |
 | [packages/convex-blog-cms/README.md](packages/convex-blog-cms/README.md) | **npm** — exports, peers, `BLOG_CMS_COMPONENT_NAME` |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | **Contributors** — tests, codegen order, PRs |
@@ -18,7 +19,7 @@ Convex component expectations are described in the official [Component authoring
 - [`packages/convex-blog-cms`](packages/convex-blog-cms) — `@basic-blog/convex-blog-cms`
   - Convex tables: `siteSettings`, `posts`, `postBlocks`
   - `makeBlogAdminAPI` for host wiring
-  - Exports: `./convex.config`, `./client`, `./react`, `./next`, `./test`
+  - Exports: `./convex.config`, `./client`, `./next`, `./test` (no React UI in the package; see `examples/blog-ui`)
   - SEO helpers: `resolvePrimaryImage`, JSON-LD, RSS XML, sitemap + image sitemap
 
 - [`apps/admin`](apps/admin) — demo CMS UI (App Router)
@@ -41,17 +42,19 @@ cp .env.local.example .env.local
 pnpm dev
 ```
 
-Enable **demo admin** mutations/queries (insecure — local only):
+Enable **demo admin** with a shared secret (insecure if exposed — local only). Use the same value in Convex and Next:
 
 ```bash
-pnpm exec convex env set DEMO_ADMIN_MODE true
+pnpm exec convex env set BLOG_ADMIN_API_KEY your-long-random-secret
+# In apps/admin/.env.local:
+# NEXT_PUBLIC_BLOG_ADMIN_API_KEY=your-long-random-secret
 ```
 
 See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all variables.
 
-### Cloudflare R2 (optional uploads)
+### Convex file storage (optional uploads)
 
-Configure R2 env vars per [`@convex-dev/r2`](https://www.convex.dev/components/cloudflare-r2). The admin app registers the R2 component in `apps/admin/convex/convex.config.ts` and exposes `generateUploadUrl` / `syncMetadata` in `convex/r2.ts`.
+Set `DEMO_ADMIN_MODE=true` in Convex (demo only) to enable `convex/media.ts` `generateUploadUrl`. The admin editor uploads images to Convex storage; the CMS stores `Id<"_storage">` on image blocks and SEO fields, and `makeBlogAdminAPI` resolves public HTTPS URLs at read time for SEO and previews.
 
 ## HTTP routes (host)
 

@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
+import { withAdminApiKey } from "@/lib/adminApiKey";
 
 export default function AdminPage() {
   const settings = useQuery(api.blog.getPublicSiteSettings, {}) as
@@ -14,7 +15,10 @@ export default function AdminPage() {
       }
     | null
     | undefined;
-  const posts = useQuery(api.blog.listPostsForAdmin, { limit: 100 }) as
+  const posts = useQuery(
+    api.blog.listPostsForAdmin,
+    withAdminApiKey({ limit: 100 }),
+  ) as
     | Array<{ _id: string; slug: string; status: string }>
     | undefined;
   const upsertSettings = useMutation(api.blog.upsertSiteSettings);
@@ -38,9 +42,11 @@ export default function AdminPage() {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-8 p-6">
       <div className="rounded border border-amber-400 bg-amber-50 p-4 text-sm text-amber-950">
-        <strong>Demo-only admin.</strong> Enable Convex admin API with{" "}
-        <code className="font-mono">npx convex env set DEMO_ADMIN_MODE true</code>.
-        Do not use in production.
+        <strong>Demo-only admin.</strong> Set the same secret in Convex (
+        <code className="font-mono">npx convex env set BLOG_ADMIN_API_KEY …</code>) and
+        in <code className="font-mono">NEXT_PUBLIC_BLOG_ADMIN_API_KEY</code> in{" "}
+        <code className="font-mono">.env.local</code>. Do not use token-in-browser auth in
+        production; use Convex Auth instead.
       </div>
 
       <section className="rounded border border-zinc-200 bg-white p-4 shadow-sm">
@@ -49,11 +55,13 @@ export default function AdminPage() {
           className="mt-3 flex flex-col gap-3"
           onSubmit={async (e) => {
             e.preventDefault();
-            await upsertSettings({
-              siteName,
-              baseUrl,
-              defaultOgImageUrl: defaultOg || undefined,
-            });
+            await upsertSettings(
+              withAdminApiKey({
+                siteName,
+                baseUrl,
+                defaultOgImageUrl: defaultOg || undefined,
+              }),
+            );
           }}
         >
           <label className="flex flex-col gap-1 text-sm">
@@ -95,7 +103,7 @@ export default function AdminPage() {
           className="mt-3 flex flex-col gap-3"
           onSubmit={async (e) => {
             e.preventDefault();
-            await createPost({ slug, title });
+            await createPost(withAdminApiKey({ slug, title }));
           }}
         >
           <label className="flex flex-col gap-1 text-sm">

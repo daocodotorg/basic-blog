@@ -29,7 +29,7 @@ app.use(blogCms);
 export default app;
 ```
 
-Optional: add [`@convex-dev/r2`](https://www.convex.dev/components/cloudflare-r2) the same way if you want uploads (see [CONFIGURATION.md](./CONFIGURATION.md)).
+Optional: enable Convex file uploads in the sample app by setting `DEMO_ADMIN_MODE=true` and using `convex/media.ts` `generateUploadUrl` (see [CONFIGURATION.md](./CONFIGURATION.md)).
 
 ## 3. Expose the host API
 
@@ -74,9 +74,96 @@ Copy the pattern from [`apps/admin/convex/http.ts`](../apps/admin/convex/http.ts
 
 - Set `NEXT_PUBLIC_CONVEX_URL` to your deployment URL.
 - Wrap the app with `ConvexProvider` from `convex/react`.
-- Import UI from `@basic-blog/convex-blog-cms/react` and SEO helpers from `@basic-blog/convex-blog-cms/next` (see [package README](../packages/convex-blog-cms/README.md)).
+- Import SEO helpers and DTO types from `@basic-blog/convex-blog-cms/next`. Render posts with your own components, or copy the reference UI from [`examples/blog-ui`](../examples/blog-ui) in this repo ([RENDERING.md](./RENDERING.md)).
 
-## 6. Build order (library developers)
+## 6. Minimal public blog (Next.js App Router)
+
+Assume your host already exports `api.blog.*` from step 3. Add routes that **only** use public queries (`getPublishedPostBySlug`, `listPublishedPosts`, `getPublicSiteSettings`).
+
+### `app/blog/page.tsx` (post list)
+
+Server Component using `fetchQuery` from `convex/nextjs` (requires `NEXT_PUBLIC_CONVEX_URL`):
+
+```tsx
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
+export default async function BlogIndexPage() {
+  const posts = await fetchQuery(api.blog.listPublishedPosts, { limit: 50 });
+  return (
+    <main className="mx-auto max-w-2xl p-6">
+      <h1 className="mb-6 text-2xl font-semibold">Blog</h1>
+      <ul className="space-y-2">
+        {posts.map((p) => (
+          <li key={p.slug}>
+            <a className="text-blue-600 underline" href={`/blog/${p.slug}`}>
+              {p.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </main>
+  );
+}
+```
+
+For a client-only list, swap `fetchQuery` for `useQuery` from `convex/react` and add `"use client"`.
+
+### `app/blog/[slug]/page.tsx` (single post + metadata)
+
+Same route can export `generateMetadata` and a default server page. `postToNextMetadata` lives in `@basic-blog/convex-blog-cms/next`.
+
+```tsx
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
+import { postToNextMetadata } from "@basic-blog/convex-blog-cms/next";
+
+type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const decoded = decodeURIComponent(slug);
+  const data = await fetchQuery(api.blog.getPublishedPostBySlug, {
+    slug: decoded,
+  });
+  if (!data) {
+    return { title: "Not found" };
+  }
+  const site = await fetchQuery(api.blog.getPublicSiteSettings, {});
+  return postToNextMetadata({
+    post: data.post,
+    blocks: data.blocks,
+    site,
+    path: `/blog/${decoded}`,
+  });
+}
+
+export default async function BlogPostPage({ params }: Props) {
+  const { slug } = await params;
+  const decoded = decodeURIComponent(slug);
+  const data = await fetchQuery(api.blog.getPublishedPostBySlug, {
+    slug: decoded,
+  });
+  if (!data) {
+    notFound();
+  }
+  return (
+    <main className="mx-auto max-w-3xl p-6">
+      <article>
+        <h1 className="text-3xl font-bold">{data.post.title}</h1>
+        {/* Map `data.blocks` in `order` and switch on `block.type` — see [RENDERING.md](./RENDERING.md) */}
+      </article>
+    </main>
+  );
+}
+```
+
+On **Next.js 14**, `params` is a plain object (not a `Promise`); omit `await` on `params` and type `Props` as `{ params: { slug: string } }`.
+
+Rendering: see [RENDERING.md](./RENDERING.md).
+
+## 7. Build order (library developers)
 
 When changing the **component** source under `src/component`, follow Convex’s recommended order:
 
@@ -109,4 +196,5 @@ flowchart LR
 ## See also
 
 - [CONFIGURATION.md](./CONFIGURATION.md) — all env vars and knobs
+- [RENDERING.md](./RENDERING.md) — DTOs and optional example UI
 - [packages/convex-blog-cms/README.md](../packages/convex-blog-cms/README.md) — npm exports and peers
