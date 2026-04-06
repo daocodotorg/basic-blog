@@ -5,11 +5,11 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/basic-blog/basic-blog.git"
+    "url": "https://github.com/daocodotorg/basic-blog.git"
   },
-  "homepage": "https://github.com/basic-blog/basic-blog/tree/main/packages/convex-blog-cms#readme",
+  "homepage": "https://github.com/daocodotorg/basic-blog/tree/main/packages/convex-blog-cms#readme",
   "bugs": {
-    "url": "https://github.com/basic-blog/basic-blog/issues"
+    "url": "https://github.com/daocodotorg/basic-blog/issues"
   },
   "keywords": ["convex", "component", "blog", "cms"],
   "type": "module",
