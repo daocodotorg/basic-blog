@@ -33,7 +33,7 @@ export default [
   ...tseslint.configs.recommended,
   // Node CLI
   {
-    files: ["bin/**/*.mjs"],
+    files: ["bin/**/*.mjs", "scripts/**/*.mjs"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",
