@@ -24,6 +24,12 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Typecheck CMS package
+        run: pnpm --filter @basic-blog/convex-blog-cms run typecheck
+
+      - name: Lint CMS package
+        run: pnpm --filter @basic-blog/convex-blog-cms run lint
+
       - name: Test package
         run: pnpm test
 

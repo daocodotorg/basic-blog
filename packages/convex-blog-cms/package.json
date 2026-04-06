@@ -12,12 +12,16 @@
     "url": "https://github.com/daocodotorg/basic-blog/issues"
   },
   "keywords": ["convex", "component", "blog", "cms"],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "scripts": {
     "dev": "run-p -r 'dev:*'",
     "dev:backend": "convex dev --typecheck-components",
     "dev:build": "chokidar 'tsconfig*.json' 'src/**/*.ts' 'src/**/*.tsx' -i '**/*.test.ts' -c 'npm run build:codegen' --initial",
     "predev": "path-exists dist || npm run build",
+    "prepublishOnly": "npm run build",
     "build": "tsc --project ./tsconfig.build.json",
     "build:codegen": "npx convex codegen --component-dir ./src/component && npm run build",
     "build:clean": "rm -rf dist *.tsbuildinfo && npm run build:codegen",
