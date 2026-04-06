@@ -149,6 +149,15 @@ if (argv[0] === "serve") {
       console.error("Invalid --port");
       process.exit(1);
     }
+  } else {
+    const eqArg = argv.find((a) => a.startsWith("--port="));
+    if (eqArg) {
+      port = Number.parseInt(eqArg.split("=")[1], 10);
+      if (Number.isNaN(port)) {
+        console.error("Invalid --port");
+        process.exit(1);
+      }
+    }
   }
   runServe(port);
 } else if (argv.length === 0) {

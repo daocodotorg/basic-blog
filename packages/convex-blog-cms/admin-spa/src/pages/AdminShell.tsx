@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PostListSidebar } from "./PostListSidebar";
@@ -7,11 +7,13 @@ import { PostListSidebar } from "./PostListSidebar";
 const BANNER_KEY = "convex-blog-admin-hide-auth-banner";
 
 export function AdminShell() {
-  const [hidden, setHidden] = useState(true);
-
-  useEffect(() => {
-    setHidden(localStorage.getItem(BANNER_KEY) === "1");
-  }, []);
+  const [hidden, setHidden] = useState(() => {
+    try {
+      return localStorage.getItem(BANNER_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
 
   return (
     <div className="bg-background flex h-screen min-h-0 flex-col overflow-hidden">

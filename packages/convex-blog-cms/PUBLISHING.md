@@ -75,7 +75,7 @@ Use this if you prefer not to use CI or need to publish from your machine.
    npm test
   ```
    If you have `CONVEX_DEPLOYMENT` set, `build:codegen` can regenerate `src/component/_generated`. Otherwise ensure generated files are committed or produced by your CI.
-4. **Verify `files`**: `[package.json](./package.json)` publishes `dist`, `src`, `scripts/blog-admin-serve.mjs`, and `bin` so consumers get source maps, the component tree, and both **`blog-admin-serve`** and **`convex-blog-admin`**. `npm run build` also runs **Vite** to produce `dist/admin-spa` (bundled admin UI).
+4. **Verify `files`**: `[package.json](./package.json)` publishes `dist`, `src` TypeScript sources (with `*.test.*` omitted), `scripts/blog-admin-serve.mjs`, and `bin` so consumers get source maps, the component tree, and both **`blog-admin-serve`** and **`convex-blog-admin`**. `npm run build` also runs **Vite** to produce `dist/admin-spa` (bundled admin UI).
 
 ### Publish
 

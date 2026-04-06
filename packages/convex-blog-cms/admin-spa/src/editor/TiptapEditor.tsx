@@ -18,35 +18,44 @@ export function TiptapEditor(props: {
   onBodyImageUpload?: (file: File) => void | Promise<void>;
   bodyImageUploadDisabled?: boolean;
 }) {
+  const {
+    initialContent,
+    placeholder: placeholderProp,
+    className,
+    onUpdateJson,
+    onReady,
+    onBodyImageUpload,
+    bodyImageUploadDisabled,
+  } = props;
   const bodyImageInputRef = useRef<HTMLInputElement>(null);
-  const placeholder = props.placeholder ?? "Start writing…";
+  const placeholder = placeholderProp ?? "Start writing…";
   const extensions = useMemo(() => createBlogEditorExtensions(placeholder), [placeholder]);
 
   const editor = useEditor({
     extensions,
-    content: props.initialContent,
+    content: initialContent,
     editorProps: {
       attributes: {
         class: cn("max-w-none text-[15px] leading-relaxed focus:outline-none min-h-[280px] px-3 py-3 text-foreground"),
       },
     },
     onUpdate: ({ editor: ed }) => {
-      props.onUpdateJson(ed.getJSON());
+      onUpdateJson(ed.getJSON());
     },
   });
 
   useEffect(() => {
-    if (editor && props.onReady) {
-      props.onReady(editor);
+    if (editor && onReady) {
+      onReady(editor);
     }
-  }, [editor, props.onReady]);
+  }, [editor, onReady]);
 
   if (!editor) {
     return <div className="text-muted-foreground min-h-[280px] text-sm">Loading editor…</div>;
   }
 
   return (
-    <div className={cn("tiptap-editor rounded-md border border-input bg-background", props.className)}>
+    <div className={cn("tiptap-editor rounded-md border border-input bg-background", className)}>
       <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1.5">
         <Button
           type="button"
@@ -134,7 +143,7 @@ export function TiptapEditor(props: {
         >
           <span className="text-xs font-medium">IMG</span>
         </Button>
-        {props.onBodyImageUpload ?
+        {onBodyImageUpload ?
           <>
             <input
               ref={bodyImageInputRef}
@@ -144,7 +153,7 @@ export function TiptapEditor(props: {
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) {
-                  void Promise.resolve(props.onBodyImageUpload!(f)).finally(() => {
+                  void Promise.resolve(onBodyImageUpload(f)).finally(() => {
                     if (bodyImageInputRef.current) {
                       bodyImageInputRef.current.value = "";
                     }
@@ -157,7 +166,7 @@ export function TiptapEditor(props: {
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              disabled={props.bodyImageUploadDisabled}
+              disabled={bodyImageUploadDisabled}
               onClick={() => bodyImageInputRef.current?.click()}
               aria-label="Upload image from device"
               title="Upload image from device (saved with your post)"

@@ -1,30 +1,37 @@
+import convexEslint from "@convex-dev/eslint-plugin";
 import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 
+// Mirrors @convex-dev/eslint-plugin recommended (upstream default targets convex/ tree).
+const convexRecommendedRules = {
+  "@convex-dev/import-wrong-runtime": "off",
+  "@convex-dev/no-old-registered-function-syntax": "error",
+  "@convex-dev/require-args-validator": "error",
+  "@convex-dev/explicit-table-ids": "error",
+};
+
 export default [
   {
     ignores: [
       "dist/**",
-      "example/dist/**",
       "*.config.{js,mjs,cjs,ts,tsx}",
-      "example/**/*.config.{js,mjs,cjs,ts,tsx}",
+      "admin-spa/**/*.config.{js,mjs,cjs,ts,tsx}",
       "**/_generated/",
       "initTemplate.mjs",
     ],
   },
   {
-    files: ["src/**/*.{js,mjs,cjs,ts,tsx}", "example/**/*.{js,mjs,cjs,ts,tsx}"],
+    files: [
+      "src/**/*.{js,mjs,cjs,ts,tsx}",
+      "admin-spa/**/*.{js,mjs,cjs,ts,tsx}",
+    ],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: [
-          "./tsconfig.json",
-          "./example/tsconfig.json",
-          "./example/convex/tsconfig.json",
-        ],
+        project: ["./tsconfig.json", "./admin-spa/tsconfig.json"],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -42,8 +49,7 @@ export default [
   },
   // Convex code - Worker environment
   {
-    files: ["src/**/*.{ts,tsx}", "example/convex/**/*.{ts,tsx}"],
-    ignores: ["src/react/**"],
+    files: ["src/**/*.{ts,tsx}"],
     languageOptions: {
       globals: globals.worker,
     },
@@ -68,9 +74,18 @@ export default [
       ],
     },
   },
+  // Convex component implementation (same rules as plugin default for `convex/**`)
+  {
+    files: ["src/component/**/*.ts"],
+    ignores: ["**/src/component/_generated/**"],
+    plugins: {
+      "@convex-dev": convexEslint,
+    },
+    rules: convexRecommendedRules,
+  },
   // React app code - Browser environment
   {
-    files: ["src/react/**/*.{ts,tsx}", "example/src/**/*.{ts,tsx}"],
+    files: ["admin-spa/src/**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -83,7 +98,10 @@ export default [
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": [
         "warn",
-        { allowConstantExport: true },
+        {
+          allowConstantExport: true,
+          allowExportNames: ["useAdminConfig", "useWrapAdminKey", "buttonVariants"],
+        },
       ],
       "@typescript-eslint/no-explicit-any": "off",
       "no-unused-vars": "off",

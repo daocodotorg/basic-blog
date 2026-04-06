@@ -204,6 +204,9 @@ That export was removed. Replace imports with:
 | `basic-blog-convex-blog-cms/test`                 | `convex-test` registration helper                                                         |
 | `basic-blog-convex-blog-cms/_generated/component` | `ComponentApi` type for `components.blogCms`                                              |
 
+#### `basic-blog-convex-blog-cms/test`
+
+The `./test` export points at **TypeScript source** (`src/test.ts`), not `dist`. Use it only from **unit tests** with [`convex-test`](https://www.npmjs.com/package/convex-test) to register this package as a component. Do **not** import it from production browser or app bundles; keep `convex-test` as a **devDependency** in the project that uses it. Published tarballs omit `*.test.ts` / `*.test.tsx` sources via `package.json` `files` patterns; `src/test.ts` is kept because it is not named `*.test.ts`.
 
 ## Development / codegen
 

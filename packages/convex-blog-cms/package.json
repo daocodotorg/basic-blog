@@ -1,7 +1,7 @@
 {
   "name": "basic-blog-convex-blog-cms",
   "description": "Headless blog and CMS as a Convex component: posts, block content, site settings, Convex file uploads, bundled TipTap admin + convex-blog-admin CLI, and optional Next.js metadata, RSS, sitemap, and JSON-LD helpers.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -29,6 +29,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "type": "module",
   "bin": {
     "convex-blog-admin": "bin/convex-blog-admin.mjs",
@@ -53,11 +56,12 @@
   },
   "files": [
     "dist",
-    "src",
     "bin",
     "scripts/blog-admin-serve.mjs",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "src/**/*.ts",
+    "src/**/*.tsx"
   ],
   "exports": {
     "./package.json": "./package.json",

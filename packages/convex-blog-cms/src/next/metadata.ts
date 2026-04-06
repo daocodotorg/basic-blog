@@ -9,6 +9,15 @@ function absoluteUrl(site: SiteSettingsDTO | null, path: string): string {
   return `${base}${p}`;
 }
 
+/** Next.js `metadataBase` must be a valid URL; invalid `site.baseUrl` should not throw at render time. */
+function metadataBaseFromSiteUrl(baseUrl: string): URL | undefined {
+  try {
+    return new URL(baseUrl);
+  } catch {
+    return undefined;
+  }
+}
+
 export function postToNextMetadata(input: {
   post: PostDTO;
   blocks: Array<{ order: number; block: BlockDTO }>;
@@ -64,8 +73,9 @@ export function siteSettingsToDefaultMetadata(
   if (!site) {
     return {};
   }
+  const metadataBase = metadataBaseFromSiteUrl(site.baseUrl);
   return {
-    metadataBase: new URL(site.baseUrl),
+    ...(metadataBase ? { metadataBase } : {}),
     title: { default: site.siteName, template: `%s | ${site.siteName}` },
     robots: site.defaultRobots,
   };
