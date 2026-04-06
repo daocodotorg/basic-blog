@@ -4,7 +4,7 @@
 
 ## Data flow
 
-1. **Public queries** from `makeBlogAdminAPI` return **hydrated** URLs for Convex file storage (see package README). Use `getPublishedPostBySlug`, `listPublishedPosts`, `getPublicSiteSettings` for public pages.
+1. **Public queries** from `makeBlogAdminAPI` return **hydrated** URLs for Convex file storage (see package README). Use `getPublishedPostBySlug`, `listPublishedPosts`, `getPublicSiteSettings` for public pages. Configure global **site settings** (name, base URL, default OG image) in the admin or via `upsertSiteSettings`; see [Site settings (global)](https://github.com/daocodotorg/basic-blog/blob/main/packages/convex-blog-cms/README.md#site-settings-global).
 2. Map **`blocks`** in `order` and switch on `block.type` (`paragraph`, `heading`, `image`, `video`, `link`).
 3. For **Next.js** metadata / OG / sitemap, use `postToNextMetadata`, `resolvePrimaryImage`, `buildSitemapXml`, etc., from `basic-blog-convex-blog-cms/next`.
 

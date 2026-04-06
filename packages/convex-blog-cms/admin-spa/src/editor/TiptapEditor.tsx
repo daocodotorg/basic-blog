@@ -1,8 +1,8 @@
 import { EditorContent, useEditor } from "@tiptap/react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { Editor } from "@tiptap/core";
 import type { JSONContent } from "@tiptap/core";
-import { Bold, Film, Italic, Link2, Redo2, Strikethrough, Undo2 } from "lucide-react";
+import { Bold, Film, ImagePlus, Italic, Link2, Redo2, Strikethrough, Undo2 } from "lucide-react";
 import { createBlogEditorExtensions } from "./extensions";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -14,7 +14,11 @@ export function TiptapEditor(props: {
   className?: string;
   onUpdateJson: (json: JSONContent) => void;
   onReady?: (editor: Editor) => void;
+  /** Upload image to Convex storage and insert (optional; header removed — use toolbar). */
+  onBodyImageUpload?: (file: File) => void | Promise<void>;
+  bodyImageUploadDisabled?: boolean;
 }) {
+  const bodyImageInputRef = useRef<HTMLInputElement>(null);
   const placeholder = props.placeholder ?? "Start writing…";
   const extensions = useMemo(() => createBlogEditorExtensions(placeholder), [placeholder]);
 
@@ -130,6 +134,38 @@ export function TiptapEditor(props: {
         >
           <span className="text-xs font-medium">IMG</span>
         </Button>
+        {props.onBodyImageUpload ?
+          <>
+            <input
+              ref={bodyImageInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) {
+                  void Promise.resolve(props.onBodyImageUpload!(f)).finally(() => {
+                    if (bodyImageInputRef.current) {
+                      bodyImageInputRef.current.value = "";
+                    }
+                  });
+                }
+              }}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              disabled={props.bodyImageUploadDisabled}
+              onClick={() => bodyImageInputRef.current?.click()}
+              aria-label="Upload image from device"
+              title="Upload image from device (saved with your post)"
+            >
+              <ImagePlus className="h-4 w-4" />
+            </Button>
+          </>
+        : null}
         <Button
           type="button"
           variant="ghost"

@@ -9,7 +9,7 @@ Monorepo with a publishable Convex **component** package (`basic-blog-convex-blo
 | [docs/SETUP.md](docs/SETUP.md) | **Integrators** — install package, register component, wire `makeBlogAdminAPI`, HTTP, optional Next.js |
 | [docs/RENDERING.md](docs/RENDERING.md) | **Integrators** — DTOs, queries, optional example UI (`examples/blog-ui`) |
 | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | **Reference** — env vars, auth, component naming |
-| [packages/convex-blog-cms/README.md](packages/convex-blog-cms/README.md) | **npm** — exports, peers, `BLOG_CMS_COMPONENT_NAME` |
+| [packages/convex-blog-cms/README.md](packages/convex-blog-cms/README.md) | **npm** — exports, peers, `BLOG_CMS_COMPONENT_NAME`, [site settings](packages/convex-blog-cms/README.md#site-settings-global) |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | **Contributors** — tests, codegen order, PRs |
 
 Convex component expectations are described in the official [Component authoring](https://docs.convex.dev/components/authoring) guide.
@@ -38,6 +38,8 @@ CONVEX_URL="https://YOUR_DEPLOYMENT.convex.cloud" npx convex-blog-admin serve
 ```
 
 3. Open **http://127.0.0.1:3847/admin**.
+
+Configure **[site settings](packages/convex-blog-cms/README.md#site-settings-global)** (site name, public base URL, default Open Graph image) in the admin under **Site settings**. They are stored in Convex and feed SEO helpers (canonical URLs, Next.js metadata defaults, RSS/sitemap). Your public app still uses `getPublicSiteSettings` (or the same DTO shape) when calling `postToNextMetadata` and related utilities.
 
 Optional **demo token auth** (local only — same value in Convex and the CLI):
 

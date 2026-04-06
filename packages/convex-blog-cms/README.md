@@ -143,10 +143,27 @@ The default registration name is `**blogCms`**, so generated code uses `componen
 
 RSS and sitemap live in the **host** app, not inside the component. Mount `httpAction` routes in your `convex/http.ts` (see the [reference http.ts](https://github.com/daocodotorg/basic-blog/blob/main/docs/reference/convex-host/convex/http.ts) in this repo). Typical paths: `GET /rss.xml`, `GET /sitemap.xml`.
 
-### SEO and URLs
+### Site settings (global)
 
-- In **site settings**, set `**baseUrl`** to your public site origin (canonical URLs, Open Graph, sitemap `loc`).
-- Match post URL paths in HTTP handlers to your real routes (e.g. `/blog/{slug}` in Next.js).
+The component stores a single **`siteSettings`** row (key `default`) edited from the bundled admin at **Site settings** (`/admin/settings`). Values are the canonical place for **public-site identity and URL base** used across SEO helpers; they live in Convex so you can change branding or the public origin **without redeploying** the host app.
+
+| Field | Purpose |
+|-------|---------|
+| **Site name** | Default site title and `title.template` for Next.js via `siteSettingsToDefaultMetadata` (`%s \| {siteName}`). |
+| **Base URL** (`https://…`, no trailing slash required) | Origin for absolute canonical URLs, Open Graph `url`, JSON-LD, RSS links, and sitemap `loc`. Should match the URL visitors use in production. |
+| **Default OG image URL** | Fallback when a post has no OG/featured image and no inline image applies—used by `resolvePrimaryImage` and thus `postToNextMetadata` / social previews. Optional HTTPS URL. |
+
+**Consuming settings in your app:** use the public query **`getPublicSiteSettings`** from `makeBlogAdminAPI` (returns a hydrated **`SiteSettingsDTO`**). Pass that object into:
+
+- **`postToNextMetadata`** and **`siteSettingsToDefaultMetadata`** (`basic-blog-convex-blog-cms/next`)
+- **`buildRssXml`**, **`postsToSitemapEntries`** + **`buildSitemapXml`** (URLs plus optional image metadata in one sitemap), **`buildArticleJsonLd`**, **`buildWebSiteJsonLd`**, as shown in the [reference `http.ts`](https://github.com/daocodotorg/basic-blog/blob/main/docs/reference/convex-host/convex/http.ts)
+
+Your visitor-facing routes (e.g. Next.js `app/blog/[slug]`) should combine **post + blocks + site** from Convex so metadata and absolute links stay consistent with the CMS.
+
+### SEO and URLs (routing)
+
+- Set **`baseUrl`** in site settings to your real public origin (see table above).
+- Match post URL paths in HTTP handlers and in your framework to the same pattern (e.g. `/blog/{slug}` in Next.js and in sitemap/RSS builders).
 
 ## Rendering (bring your own UI)
 

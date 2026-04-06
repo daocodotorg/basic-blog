@@ -5,7 +5,15 @@ import { useMutation, useQuery } from "convex/react";
 import type { Editor } from "@tiptap/core";
 import type { JSONContent } from "@tiptap/core";
 import type { Id } from "convex/values";
-import { ChevronDown, Eye, ImagePlus, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  Eye,
+  Image as ImageIcon,
+  ImagePlus,
+  Loader2,
+  Save,
+  Trash2,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useWrapAdminKey } from "@/adminConfig";
@@ -24,12 +32,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -182,10 +184,11 @@ export function PostEditor() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [uploadBusy, setUploadBusy] = useState(false);
+  /** Which image field is uploading (for scoped spinners). */
+  const [uploadTarget, setUploadTarget] = useState<null | "featured" | "og" | "body">(null);
 
   const ogFileRef = useRef<HTMLInputElement>(null);
   const featFileRef = useRef<HTMLInputElement>(null);
-  const bodyImageRef = useRef<HTMLInputElement>(null);
 
   const initialized = useRef(false);
 
@@ -277,6 +280,141 @@ export function PostEditor() {
     return resolvePrimaryImage(previewPost, hydratedForPreview, settings);
   }, [previewPost, hydratedForPreview, settings]);
 
+  const coverPreviewUrl = useMemo(() => {
+    const u = previewPost?.featuredImageUrl?.trim();
+    return u ? u : null;
+  }, [previewPost?.featuredImageUrl]);
+
+  const ogPreviewUrl = useMemo(() => {
+    const u = previewPost?.ogImageUrl?.trim();
+    return u ? u : null;
+  }, [previewPost?.ogImageUrl]);
+
+  const clearFeaturedCover = useCallback(async () => {
+    if (!data?.post) {
+      return;
+    }
+    setFeaturedUrl("");
+    setFeaturedStorageId(null);
+    setSaveState("saving");
+    setErrorMsg(null);
+    try {
+      await updatePost(
+        wrap({
+          postId: data.post._id,
+          patch: { featuredImageUrl: "" } as never,
+        }),
+      );
+      setSaveState("saved");
+      setTimeout(() => setSaveState("idle"), 1500);
+    } catch (e) {
+      setSaveState("error");
+      setErrorMsg(e instanceof Error ? e.message : String(e));
+    }
+  }, [data?.post, updatePost, wrap]);
+
+  const clearOgImage = useCallback(async () => {
+    if (!data?.post) {
+      return;
+    }
+    setOgImageUrl("");
+    setOgImageStorageId(null);
+    setSaveState("saving");
+    setErrorMsg(null);
+    try {
+      await updatePost(
+        wrap({
+          postId: data.post._id,
+          patch: { ogImageUrl: "" } as never,
+        }),
+      );
+      setSaveState("saved");
+      setTimeout(() => setSaveState("idle"), 1500);
+    } catch (e) {
+      setSaveState("error");
+      setErrorMsg(e instanceof Error ? e.message : String(e));
+    }
+  }, [data?.post, updatePost, wrap]);
+
+  const buildMetaPatch = useCallback((): Record<string, unknown> => {
+    if (!data?.post) {
+      return {};
+    }
+    const patch: Record<string, unknown> = {
+      title: title || undefined,
+      authorName: authorName || undefined,
+      excerpt: excerpt || undefined,
+      metaTitle: metaTitle || undefined,
+      metaDescription: metaDescription || undefined,
+    };
+    if (slugEdit.trim() !== data.post.slug) {
+      patch.slug = slugEdit.trim();
+    }
+    if (ogImageStorageId) {
+      patch.ogImageStorageId = ogImageStorageId;
+    } else {
+      patch.ogImageUrl = ogImageUrl.trim() === "" ? "" : ogImageUrl.trim() || undefined;
+    }
+    if (featuredStorageId) {
+      patch.featuredImageStorageId = featuredStorageId;
+    } else {
+      patch.featuredImageUrl = featuredUrl.trim() === "" ? "" : featuredUrl.trim() || undefined;
+    }
+    return patch;
+  }, [
+    data?.post,
+    title,
+    slugEdit,
+    authorName,
+    excerpt,
+    metaTitle,
+    metaDescription,
+    ogImageUrl,
+    ogImageStorageId,
+    featuredUrl,
+    featuredStorageId,
+  ]);
+
+  const saveDraftNow = useCallback(async () => {
+    if (!data?.post || docJson === null) {
+      return;
+    }
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    if (metaTimer.current) {
+      clearTimeout(metaTimer.current);
+      metaTimer.current = null;
+    }
+    setSaveState("saving");
+    setErrorMsg(null);
+    try {
+      const patch = buildMetaPatch();
+      await updatePost(
+        wrap({
+          postId: data.post._id,
+          patch: patch as never,
+        }),
+      );
+      if (patch.slug && typeof patch.slug === "string" && patch.slug !== slug) {
+        navigate(`/admin/edit/${encodeURIComponent(patch.slug)}`, { replace: true });
+      }
+      const rows = docJsonToBlocks(docJson).map((r, i) => ({ ...r, order: i }));
+      await replaceBlocks(
+        wrap({
+          postId: data.post._id,
+          blocks: rows as never,
+        }),
+      );
+      setSaveState("saved");
+      setTimeout(() => setSaveState("idle"), 1500);
+    } catch (e) {
+      setSaveState("error");
+      setErrorMsg(e instanceof Error ? e.message : String(e));
+    }
+  }, [data?.post, docJson, buildMetaPatch, updatePost, replaceBlocks, wrap, navigate, slug]);
+
   const scheduleSaveBlocks = useCallback(
     (json: JSONContent) => {
       if (!data?.post) {
@@ -318,26 +456,7 @@ export function PostEditor() {
       setSaveState("saving");
       setErrorMsg(null);
       try {
-        const patch: Record<string, unknown> = {
-          title: title || undefined,
-          authorName: authorName || undefined,
-          excerpt: excerpt || undefined,
-          metaTitle: metaTitle || undefined,
-          metaDescription: metaDescription || undefined,
-        };
-        if (slugEdit.trim() !== data.post.slug) {
-          patch.slug = slugEdit.trim();
-        }
-        if (ogImageStorageId) {
-          patch.ogImageStorageId = ogImageStorageId;
-        } else {
-          patch.ogImageUrl = ogImageUrl.trim() === "" ? "" : ogImageUrl.trim() || undefined;
-        }
-        if (featuredStorageId) {
-          patch.featuredImageStorageId = featuredStorageId;
-        } else {
-          patch.featuredImageUrl = featuredUrl.trim() === "" ? "" : featuredUrl.trim() || undefined;
-        }
+        const patch = buildMetaPatch();
         await updatePost(
           wrap({
             postId: data.post._id,
@@ -354,29 +473,14 @@ export function PostEditor() {
         setErrorMsg(e instanceof Error ? e.message : String(e));
       }
     }, 600);
-  }, [
-    data?.post,
-    title,
-    slugEdit,
-    authorName,
-    excerpt,
-    metaTitle,
-    metaDescription,
-    ogImageUrl,
-    ogImageStorageId,
-    featuredUrl,
-    featuredStorageId,
-    updatePost,
-    wrap,
-    navigate,
-    slug,
-  ]);
+  }, [data?.post, buildMetaPatch, updatePost, wrap, navigate, slug]);
 
   async function onOgFile(file: File) {
     if (!data?.post || !file.size) {
       return;
     }
     setUploadBusy(true);
+    setUploadTarget("og");
     try {
       const uploadUrl = await generateUploadUrl();
       const storageId = (await uploadFileToConvex(uploadUrl, file)) as Id<"_storage">;
@@ -390,6 +494,7 @@ export function PostEditor() {
       );
     } finally {
       setUploadBusy(false);
+      setUploadTarget(null);
       if (ogFileRef.current) {
         ogFileRef.current.value = "";
       }
@@ -401,6 +506,7 @@ export function PostEditor() {
       return;
     }
     setUploadBusy(true);
+    setUploadTarget("featured");
     try {
       const uploadUrl = await generateUploadUrl();
       const storageId = (await uploadFileToConvex(uploadUrl, file)) as Id<"_storage">;
@@ -414,6 +520,7 @@ export function PostEditor() {
       );
     } finally {
       setUploadBusy(false);
+      setUploadTarget(null);
       if (featFileRef.current) {
         featFileRef.current.value = "";
       }
@@ -425,6 +532,7 @@ export function PostEditor() {
       return;
     }
     setUploadBusy(true);
+    setUploadTarget("body");
     try {
       const uploadUrl = await generateUploadUrl();
       const storageId = await uploadFileToConvex(uploadUrl, file);
@@ -443,9 +551,7 @@ export function PostEditor() {
       );
     } finally {
       setUploadBusy(false);
-      if (bodyImageRef.current) {
-        bodyImageRef.current.value = "";
-      }
+      setUploadTarget(null);
     }
   }
 
@@ -482,6 +588,9 @@ export function PostEditor() {
           <p className="text-muted-foreground text-xs">{statusLabel}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <span className="text-muted-foreground text-xs">{words} words</span>
+            <span className="text-muted-foreground hidden sm:inline text-[11px]">
+              · Auto-saves; Save syncs draft now
+            </span>
             {saveState === "saving" ?
               <span className="text-muted-foreground flex items-center gap-1 text-xs">
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -503,6 +612,15 @@ export function PostEditor() {
             <Eye className="mr-1.5 h-4 w-4" />
             {preview ? "Edit" : "Preview"}
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={uploadBusy || preview}
+            onClick={() => void saveDraftNow()}
+          >
+            <Save className="mr-1.5 h-4 w-4" />
+            Save
+          </Button>
           {data.post.status === "draft" ?
             <Button size="sm" onClick={() => publishPost(wrap({ postId: data.post._id }))}>
               Publish
@@ -510,35 +628,15 @@ export function PostEditor() {
           : <Button variant="secondary" size="sm" onClick={() => unpublishPost(wrap({ postId: data.post._id }))}>
               Unpublish
             </Button>}
-          <Button variant="outline" size="sm" disabled={uploadBusy} onClick={() => bodyImageRef.current?.click()}>
-            <ImagePlus className="mr-1.5 h-4 w-4" />
-            Body image
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 className="mr-1.5 h-4 w-4" />
+            Delete
           </Button>
-          <input
-            ref={bodyImageRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) {
-                void onBodyImageFile(f);
-              }
-            }}
-          />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive focus:text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete post…
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </header>
 
@@ -597,36 +695,91 @@ export function PostEditor() {
                 />
               </div>
 
-              <div className="rounded-lg border border-dashed border-border p-4">
-                <p className="text-muted-foreground mb-2 text-xs font-medium">Cover image</p>
-                <div className="flex flex-wrap gap-2">
-                  <Input
-                    value={featuredUrl}
-                    onChange={(e) => {
-                      setFeaturedUrl(e.target.value);
-                      setFeaturedStorageId(null);
-                      scheduleSaveMeta();
-                    }}
-                    placeholder="https://…"
-                    className="max-w-md flex-1"
-                  />
-                  <input
-                    ref={featFileRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) {
-                        void onFeaturedFile(f);
-                      }
-                    }}
-                  />
-                  <Button type="button" variant="outline" size="sm" disabled={uploadBusy} onClick={() => featFileRef.current?.click()}>
-                    Upload
-                  </Button>
+              <div className="space-y-4 rounded-lg border border-dashed border-border p-4">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">Cover image</p>
+                    <p className="text-muted-foreground mt-0.5 text-[11px]">
+                      Used on article cards and social previews. Wide images (about 5:2) look best.
+                    </p>
+                  </div>
+                  {coverPreviewUrl ?
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground h-8 shrink-0"
+                      disabled={uploadBusy}
+                      onClick={() => void clearFeaturedCover()}
+                    >
+                      Remove cover
+                    </Button>
+                  : null}
                 </div>
-                <p className="text-muted-foreground mt-2 text-[11px]">5:2 aspect ratio looks best for social cards.</p>
+
+                <div className="bg-muted/30 relative aspect-[5/2] max-h-52 w-full overflow-hidden rounded-md border border-border">
+                  {uploadBusy && uploadTarget === "featured" ?
+                    <div className="bg-background/60 absolute inset-0 z-10 flex items-center justify-center">
+                      <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+                    </div>
+                  : null}
+                  {coverPreviewUrl ?
+                    <img src={coverPreviewUrl} alt="" className="h-full w-full object-cover" />
+                  : <div className="text-muted-foreground flex h-full min-h-[7.5rem] flex-col items-center justify-center gap-2 px-4 text-center">
+                      <ImageIcon className="h-9 w-9 opacity-35" aria-hidden />
+                      <span className="text-xs">No cover image yet</span>
+                    </div>
+                  }
+                </div>
+
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="featured-url">Image link</Label>
+                    <Input
+                      id="featured-url"
+                      value={featuredUrl}
+                      onChange={(e) => {
+                        setFeaturedUrl(e.target.value);
+                        setFeaturedStorageId(null);
+                        scheduleSaveMeta();
+                      }}
+                      placeholder="https://…"
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-muted-foreground text-[11px]">Paste a URL to use a picture already hosted online.</p>
+                  </div>
+
+                  <div className="border-border flex flex-wrap items-center gap-2 border-t pt-3">
+                    <span className="text-muted-foreground text-xs font-medium">Or upload from your device</span>
+                    <input
+                      ref={featFileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) {
+                          void onFeaturedFile(f);
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={uploadBusy}
+                      onClick={() => featFileRef.current?.click()}
+                    >
+                      <ImagePlus className="mr-1.5 h-4 w-4" />
+                      Choose image file
+                    </Button>
+                  </div>
+                  <p className="text-muted-foreground text-[11px]">
+                    Uploads use Convex file storage and attach to this post when the upload completes. The editor
+                    auto-saves; use <span className="font-medium text-foreground/80">Save</span> in the header to sync
+                    title and body right away.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -641,6 +794,8 @@ export function PostEditor() {
                 onReady={(ed) => {
                   editorRef.current = ed;
                 }}
+                onBodyImageUpload={(file) => void onBodyImageFile(file)}
+                bodyImageUploadDisabled={uploadBusy}
               />
             </div>
 
@@ -678,38 +833,83 @@ export function PostEditor() {
                     placeholder="Leave blank to use excerpt or an auto summary from post content."
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="ogUrl">OG image URL</Label>
-                  <Input
-                    id="ogUrl"
-                    value={ogImageUrl}
-                    onChange={(e) => {
-                      setOgImageUrl(e.target.value);
-                      setOgImageStorageId(null);
-                      scheduleSaveMeta();
-                    }}
-                    placeholder="Optional — defaults to cover image, then first image in post"
-                  />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <input
-                    ref={ogFileRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) {
-                        void onOgFile(f);
-                      }
-                    }}
-                  />
-                  <Button type="button" variant="outline" size="sm" disabled={uploadBusy} onClick={() => ogFileRef.current?.click()}>
-                    Upload OG image
-                  </Button>
-                  {ogImageStorageId ?
-                    <span className="text-muted-foreground text-xs">Using uploaded OG image.</span>
-                  : null}
+                <div className="space-y-3 rounded-md border border-border/80 bg-muted/20 p-3">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <Label htmlFor="og-image-url" className="text-sm font-medium">
+                        Open Graph image
+                      </Label>
+                      <p className="text-muted-foreground mt-0.5 text-[11px]">
+                        Optional. If empty, the cover image or first in-post image is used for link previews.
+                      </p>
+                    </div>
+                    {ogPreviewUrl ?
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground h-8 shrink-0"
+                        disabled={uploadBusy}
+                        onClick={() => void clearOgImage()}
+                      >
+                        Remove OG image
+                      </Button>
+                    : null}
+                  </div>
+
+                  <div className="bg-muted/30 relative aspect-[5/2] max-h-36 w-full max-w-md overflow-hidden rounded-md border border-border">
+                    {uploadBusy && uploadTarget === "og" ?
+                      <div className="bg-background/60 absolute inset-0 z-10 flex items-center justify-center">
+                        <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
+                      </div>
+                    : null}
+                    {ogPreviewUrl ?
+                      <img src={ogPreviewUrl} alt="" className="h-full w-full object-cover" />
+                    : <div className="text-muted-foreground flex h-full min-h-[5rem] flex-col items-center justify-center gap-1 px-3 text-center">
+                        <ImageIcon className="h-7 w-7 opacity-35" aria-hidden />
+                        <span className="text-[11px]">No custom OG image</span>
+                      </div>
+                    }
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Input
+                      id="og-image-url"
+                      value={ogImageUrl}
+                      onChange={(e) => {
+                        setOgImageUrl(e.target.value);
+                        setOgImageStorageId(null);
+                        scheduleSaveMeta();
+                      }}
+                      placeholder="https://…"
+                      className="font-mono text-sm"
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      ref={ogFileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) {
+                          void onOgFile(f);
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={uploadBusy}
+                      onClick={() => ogFileRef.current?.click()}
+                    >
+                      <ImagePlus className="mr-1.5 h-4 w-4" />
+                      Upload OG image
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-muted-foreground text-[11px]">
                   Uploads use <code className="rounded bg-muted px-1 font-mono">blog.generateUploadUrl</code> from{" "}

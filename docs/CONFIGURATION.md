@@ -56,5 +56,7 @@ RSS and sitemap are **not** inside the component. Mount routes in the host [`con
 
 ## SEO / URLs
 
-- **Site settings** `baseUrl` should match your public site origin (used for canonical URLs, OG, sitemap `loc`).
-- Post paths in the sample HTTP handlers use `/blog/{slug}`; adjust to match your real routes if different.
+Global **site settings** (site name, base URL, default OG image) are stored in Convex and edited in the bundled admin (**Site settings**). They drive canonical URLs, default Next.js metadata, RSS/sitemap output, and OG fallbacks. See the package README section [Site settings (global)](https://github.com/daocodotorg/basic-blog/blob/main/packages/convex-blog-cms/README.md#site-settings-global) for field meanings and how **`getPublicSiteSettings`** feeds **`postToNextMetadata`** and related helpers.
+
+- **`baseUrl`** must match your production public origin (scheme + host, no path).
+- Post paths in the sample HTTP handlers use `/blog/{slug}`; keep that aligned with your real routes and with how you call SEO builders.
