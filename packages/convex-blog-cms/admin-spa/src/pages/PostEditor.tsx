@@ -139,6 +139,18 @@ function wordCountFromDoc(doc: JSONContent | null): number {
   return n;
 }
 
+/** `datetime-local` value in the browser's local timezone (no seconds in the control). */
+function msToDatetimeLocal(ms: number): string {
+  const d = new Date(ms);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function parseDatetimeLocalMs(value: string): number | null {
+  const t = Date.parse(value);
+  return Number.isNaN(t) ? null : t;
+}
+
 export function PostEditor() {
   const wrap = useWrapAdminKey();
   const params = useParams<{ slug: string }>();
@@ -178,6 +190,8 @@ export function PostEditor() {
   const [ogImageStorageId, setOgImageStorageId] = useState<Id<"_storage"> | null>(null);
   const [featuredUrl, setFeaturedUrl] = useState("");
   const [featuredStorageId, setFeaturedStorageId] = useState<Id<"_storage"> | null>(null);
+  /** For published posts: `datetime-local` string; drafts leave empty. */
+  const [publishedAtInput, setPublishedAtInput] = useState("");
 
   const [preview, setPreview] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -225,6 +239,21 @@ export function PostEditor() {
     setFeaturedStorageId((data.post.featuredImageStorageId as Id<"_storage"> | undefined) ?? null);
   }, [data]);
 
+  // Sync publication date field from the server when the loaded post or its stored timestamp changes
+  // (e.g. after Publish). Narrow deps avoid resetting local edits when unrelated fields refresh.
+  useEffect(() => {
+    if (!data?.post) {
+      return;
+    }
+    if (data.post.status === "published") {
+      const ms = data.post.publishedAt ?? Date.now();
+      setPublishedAtInput(msToDatetimeLocal(ms));
+    } else {
+      setPublishedAtInput("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-sync on identity / status / stored publishedAt
+  }, [data?.post?._id, data?.post?.status, data?.post?.publishedAt]);
+
   const previewPost = useMemo((): PostDTO | null => {
     if (!data?.hydratedPost) {
       return null;
@@ -238,6 +267,10 @@ export function PostEditor() {
       featuredStorageId ? base.featuredImageUrl
       : featuredUrl.trim() !== "" ? featuredUrl.trim()
       : base.featuredImageUrl;
+    const publishedAt =
+      base.status === "published" ?
+        parseDatetimeLocalMs(publishedAtInput) ?? base.publishedAt
+      : base.publishedAt;
     return {
       ...base,
       title,
@@ -247,6 +280,7 @@ export function PostEditor() {
       metaDescription: metaDescription || base.metaDescription,
       ogImageUrl: og,
       featuredImageUrl: featured,
+      publishedAt,
     };
   }, [
     data,
@@ -259,6 +293,7 @@ export function PostEditor() {
     ogImageStorageId,
     featuredUrl,
     featuredStorageId,
+    publishedAtInput,
   ]);
 
   const hydratedForPreview = useMemo(() => {
@@ -360,6 +395,12 @@ export function PostEditor() {
     } else {
       patch.featuredImageUrl = featuredUrl.trim() === "" ? "" : featuredUrl.trim() || undefined;
     }
+    if (data.post.status === "published") {
+      const ms = parseDatetimeLocalMs(publishedAtInput);
+      if (ms != null && ms !== data.post.publishedAt) {
+        patch.publishedAt = ms;
+      }
+    }
     return patch;
   }, [
     data?.post,
@@ -373,6 +414,7 @@ export function PostEditor() {
     ogImageStorageId,
     featuredUrl,
     featuredStorageId,
+    publishedAtInput,
   ]);
 
   const saveDraftNow = useCallback(async () => {
@@ -576,9 +618,13 @@ export function PostEditor() {
   }
 
   const words = wordCountFromDoc(docJson);
+  const publishedDisplayMs =
+    data.post.status === "published" ?
+      parseDatetimeLocalMs(publishedAtInput) ?? data.post.publishedAt
+    : undefined;
   const statusLabel =
     data.post.status === "published" ?
-      `Published${data.post.publishedAt ? ` · ${new Date(data.post.publishedAt).toLocaleDateString()}` : ""}`
+      `Published${publishedDisplayMs != null ? ` · ${new Date(publishedDisplayMs).toLocaleString()}` : ""}`
     : `Draft${data.post._creationTime ? ` · ${new Date(data.post._creationTime).toLocaleString()}` : ""}`;
 
   return (
@@ -693,6 +739,36 @@ export function PostEditor() {
                   />
                 </div>
               </div>
+              {data.post.status === "published" ?
+                <div className="space-y-1.5">
+                  <Label htmlFor="published-at">Publication date</Label>
+                  <p className="text-muted-foreground text-[11px] leading-relaxed">
+                    Used for RSS, sitemap, structured data, and post ordering. Shown in your local timezone; stored as a
+                    timestamp.
+                  </p>
+                  <Input
+                    id="published-at"
+                    type="datetime-local"
+                    value={publishedAtInput}
+                    onChange={(e) => {
+                      setPublishedAtInput(e.target.value);
+                      scheduleSaveMeta();
+                    }}
+                    className="font-mono text-sm max-w-md"
+                  />
+                </div>
+              : <div className="space-y-1.5">
+                  <Label>Created</Label>
+                  <p className="text-muted-foreground text-[11px] leading-relaxed">
+                    Draft posts are not public. After you publish, you can set the publication date.
+                  </p>
+                  <p className="text-foreground text-sm">
+                    {data.post._creationTime ?
+                      new Date(data.post._creationTime).toLocaleString()
+                    : "—"}
+                  </p>
+                </div>
+              }
               <div className="space-y-1.5">
                 <Label htmlFor="excerpt">Excerpt</Label>
                 <p className="text-muted-foreground text-[11px] leading-relaxed">
