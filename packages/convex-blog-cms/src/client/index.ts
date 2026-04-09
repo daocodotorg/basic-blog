@@ -243,6 +243,8 @@ export function makeBlogAdminAPI(
           twitterImageStorageId: v.optional(v.id("_storage")),
           featuredImageUrl: v.optional(v.string()),
           featuredImageStorageId: v.optional(v.id("_storage")),
+          featuredImageFocalX: v.optional(v.number()),
+          featuredImageFocalY: v.optional(v.number()),
           noindex: v.optional(v.boolean()),
           answerSummary: v.optional(v.string()),
           keyTakeaways: v.optional(v.array(v.string())),

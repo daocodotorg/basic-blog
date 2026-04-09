@@ -37,4 +37,31 @@ describe("blog component", () => {
     const s = await t.query(api.blog.getPublicSiteSettings, {});
     expect(s?.siteName).toBe("Test");
   });
+
+  test("featured image focal point persists and clears with cover", async () => {
+    const t = initConvexTest();
+    const id = await t.mutation(api.blog.createPost, {
+      slug: "focal",
+      title: "Focal",
+    });
+    await t.mutation(api.blog.updatePost, {
+      postId: id,
+      patch: {
+        featuredImageUrl: "https://example.com/cover.jpg",
+        featuredImageFocalX: 22,
+        featuredImageFocalY: 78,
+      },
+    });
+    let admin = await t.query(api.blog.getPostForAdmin, { slug: "focal" });
+    expect(admin?.post.featuredImageFocalX).toBe(22);
+    expect(admin?.post.featuredImageFocalY).toBe(78);
+
+    await t.mutation(api.blog.updatePost, {
+      postId: id,
+      patch: { featuredImageUrl: "" },
+    });
+    admin = await t.query(api.blog.getPostForAdmin, { slug: "focal" });
+    expect(admin?.post.featuredImageFocalX).toBeUndefined();
+    expect(admin?.post.featuredImageFocalY).toBeUndefined();
+  });
 });

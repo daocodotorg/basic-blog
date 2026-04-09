@@ -1,5 +1,8 @@
 import type { BlockStored } from "basic-blog-convex-blog-cms";
-import { resolvePrimaryImage } from "basic-blog-convex-blog-cms/next";
+import {
+  featuredImageCoverStyle,
+  resolvePrimaryImage,
+} from "basic-blog-convex-blog-cms/next";
 import type { BlockDTO, PostDTO } from "basic-blog-convex-blog-cms/next";
 import { useMutation, useQuery } from "convex/react";
 import type { Editor } from "@tiptap/core";
@@ -18,6 +21,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useWrapAdminKey } from "@/adminConfig";
 import { AdminPostPreview } from "@/components/AdminPostPreview";
+import {
+  FeaturedCoverEditor,
+  type CoverPreviewAspect,
+} from "@/components/FeaturedCoverEditor";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -55,6 +62,8 @@ type AdminBundle = {
     ogImageStorageId?: string;
     featuredImageUrl?: string;
     featuredImageStorageId?: string;
+    featuredImageFocalX?: number;
+    featuredImageFocalY?: number;
   };
   blocks: Array<{ order: number; block: BlockStored }>;
   hydratedPost: PostDTO;
@@ -190,6 +199,9 @@ export function PostEditor() {
   const [ogImageStorageId, setOgImageStorageId] = useState<Id<"_storage"> | null>(null);
   const [featuredUrl, setFeaturedUrl] = useState("");
   const [featuredStorageId, setFeaturedStorageId] = useState<Id<"_storage"> | null>(null);
+  const [featuredFocalX, setFeaturedFocalX] = useState(50);
+  const [featuredFocalY, setFeaturedFocalY] = useState(50);
+  const [coverPreviewAspect, setCoverPreviewAspect] = useState<CoverPreviewAspect>("16:9");
   /** For published posts: `datetime-local` string; drafts leave empty. */
   const [publishedAtInput, setPublishedAtInput] = useState("");
 
@@ -237,6 +249,8 @@ export function PostEditor() {
     setOgImageStorageId((data.post.ogImageStorageId as Id<"_storage"> | undefined) ?? null);
     setFeaturedUrl(data.post.featuredImageUrl ?? "");
     setFeaturedStorageId((data.post.featuredImageStorageId as Id<"_storage"> | undefined) ?? null);
+    setFeaturedFocalX(data.post.featuredImageFocalX ?? 50);
+    setFeaturedFocalY(data.post.featuredImageFocalY ?? 50);
   }, [data]);
 
   // Sync publication date field from the server when the loaded post or its stored timestamp changes
@@ -280,6 +294,8 @@ export function PostEditor() {
       metaDescription: metaDescription || base.metaDescription,
       ogImageUrl: og,
       featuredImageUrl: featured,
+      featuredImageFocalX: featuredFocalX,
+      featuredImageFocalY: featuredFocalY,
       publishedAt,
     };
   }, [
@@ -293,6 +309,8 @@ export function PostEditor() {
     ogImageStorageId,
     featuredUrl,
     featuredStorageId,
+    featuredFocalX,
+    featuredFocalY,
     publishedAtInput,
   ]);
 
@@ -331,6 +349,8 @@ export function PostEditor() {
     }
     setFeaturedUrl("");
     setFeaturedStorageId(null);
+    setFeaturedFocalX(50);
+    setFeaturedFocalY(50);
     setSaveState("saving");
     setErrorMsg(null);
     try {
@@ -395,6 +415,15 @@ export function PostEditor() {
     } else {
       patch.featuredImageUrl = featuredUrl.trim() === "" ? "" : featuredUrl.trim() || undefined;
     }
+    const hasFeaturedImage =
+      featuredStorageId != null ||
+      featuredUrl.trim() !== "" ||
+      Boolean(data.post.featuredImageStorageId) ||
+      Boolean(data.post.featuredImageUrl?.trim());
+    if (hasFeaturedImage) {
+      patch.featuredImageFocalX = featuredFocalX;
+      patch.featuredImageFocalY = featuredFocalY;
+    }
     if (data.post.status === "published") {
       const ms = parseDatetimeLocalMs(publishedAtInput);
       if (ms != null && ms !== data.post.publishedAt) {
@@ -414,6 +443,8 @@ export function PostEditor() {
     ogImageStorageId,
     featuredUrl,
     featuredStorageId,
+    featuredFocalX,
+    featuredFocalY,
     publishedAtInput,
   ]);
 
@@ -554,10 +585,16 @@ export function PostEditor() {
       const storageId = (await uploadFileToConvex(uploadUrl, file)) as Id<"_storage">;
       setFeaturedStorageId(storageId);
       setFeaturedUrl("");
+      setFeaturedFocalX(50);
+      setFeaturedFocalY(50);
       await updatePost(
         wrap({
           postId: data.post._id,
-          patch: { featuredImageStorageId: storageId },
+          patch: {
+            featuredImageStorageId: storageId,
+            featuredImageFocalX: 50,
+            featuredImageFocalY: 50,
+          },
         }),
       );
     } finally {
@@ -793,7 +830,7 @@ export function PostEditor() {
                   <div>
                     <p className="text-sm font-medium">Cover image</p>
                     <p className="text-muted-foreground mt-0.5 text-[11px]">
-                      Used on article cards and social previews. Wide images (about 5:2) look best.
+                      Used on article cards and social previews. Set the visible crop for 16:9 and 5:4 layouts below.
                     </p>
                   </div>
                   {coverPreviewUrl ?
@@ -810,20 +847,20 @@ export function PostEditor() {
                   : null}
                 </div>
 
-                <div className="bg-muted/30 relative aspect-[5/2] max-h-52 w-full overflow-hidden rounded-md border border-border">
-                  {uploadBusy && uploadTarget === "featured" ?
-                    <div className="bg-background/60 absolute inset-0 z-10 flex items-center justify-center">
-                      <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
-                    </div>
-                  : null}
-                  {coverPreviewUrl ?
-                    <img src={coverPreviewUrl} alt="" className="h-full w-full object-cover" />
-                  : <div className="text-muted-foreground flex h-full min-h-[7.5rem] flex-col items-center justify-center gap-2 px-4 text-center">
-                      <ImageIcon className="h-9 w-9 opacity-35" aria-hidden />
-                      <span className="text-xs">No cover image yet</span>
-                    </div>
-                  }
-                </div>
+                <FeaturedCoverEditor
+                  imageUrl={coverPreviewUrl}
+                  aspect={coverPreviewAspect}
+                  onAspectChange={setCoverPreviewAspect}
+                  focalX={featuredFocalX}
+                  focalY={featuredFocalY}
+                  onFocalChange={(x, y) => {
+                    setFeaturedFocalX(x);
+                    setFeaturedFocalY(y);
+                  }}
+                  onFocalCommit={() => scheduleSaveMeta()}
+                  disabled={uploadBusy}
+                  showSpinner={uploadBusy && uploadTarget === "featured"}
+                />
 
                 <div className="space-y-3">
                   <div className="space-y-1.5">
@@ -1051,11 +1088,21 @@ function PreviewPane(props: {
   if (!props.post) {
     return null;
   }
+  const featuredTrim = props.post.featuredImageUrl?.trim();
+  const primaryIsFeatured =
+    props.primary != null &&
+    Boolean(featuredTrim) &&
+    props.primary.url === featuredTrim;
   return (
     <div className="space-y-4">
       {props.primary ?
         <div className="overflow-hidden rounded-lg border border-border">
-          <img src={props.primary.url} alt={props.primary.alt} className="max-h-56 w-full object-cover" />
+          <img
+            src={props.primary.url}
+            alt={props.primary.alt}
+            className="max-h-56 w-full object-cover"
+            style={primaryIsFeatured ? featuredImageCoverStyle(props.post) : { objectFit: "cover" }}
+          />
         </div>
       : null}
       <div className="bg-card rounded-lg border border-border p-4">

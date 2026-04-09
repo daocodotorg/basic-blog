@@ -12,6 +12,10 @@ export type PostDTO = {
   ogImageUrl?: string;
   twitterImageUrl?: string;
   featuredImageUrl?: string;
+  /** 0–100, horizontal anchor for `object-position` with `object-fit: cover` (default 50). */
+  featuredImageFocalX?: number;
+  /** 0–100, vertical anchor for `object-position` with `object-fit: cover` (default 50). */
+  featuredImageFocalY?: number;
   noindex?: boolean;
   answerSummary?: string;
   keyTakeaways?: string[];

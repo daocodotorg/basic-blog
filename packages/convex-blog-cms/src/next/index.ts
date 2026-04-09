@@ -14,3 +14,7 @@ export {
   type SitemapUrlEntry,
 } from "../seo/sitemap.js";
 export type { PostDTO, SiteSettingsDTO, BlockDTO, PrimaryImage } from "../seo/types.js";
+export {
+  featuredImageCoverStyle,
+  type FeaturedCoverImageStyle,
+} from "./featuredImageStyle.js";

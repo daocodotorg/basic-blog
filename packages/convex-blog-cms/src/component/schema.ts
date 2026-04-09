@@ -70,6 +70,10 @@ export default defineSchema({
     twitterImageStorageId: v.optional(v.id("_storage")),
     featuredImageUrl: v.optional(v.string()),
     featuredImageStorageId: v.optional(v.id("_storage")),
+    /** 0–100 for CSS `object-position` X when cropping with `object-fit: cover` (50 = center). */
+    featuredImageFocalX: v.optional(v.number()),
+    /** 0–100 for CSS `object-position` Y when cropping with `object-fit: cover` (50 = center). */
+    featuredImageFocalY: v.optional(v.number()),
     noindex: v.optional(v.boolean()),
     answerSummary: v.optional(v.string()),
     keyTakeaways: v.optional(v.array(v.string())),

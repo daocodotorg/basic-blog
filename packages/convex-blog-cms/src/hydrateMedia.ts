@@ -44,6 +44,8 @@ export async function hydratePostDTO(
       post.featuredImageUrl,
       post.featuredImageStorageId,
     ),
+    featuredImageFocalX: post.featuredImageFocalX,
+    featuredImageFocalY: post.featuredImageFocalY,
     noindex: post.noindex,
     answerSummary: post.answerSummary,
     keyTakeaways: post.keyTakeaways,

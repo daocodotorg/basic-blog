@@ -155,6 +155,8 @@ export const updatePost = mutation({
       twitterImageStorageId: v.optional(v.id("_storage")),
       featuredImageUrl: v.optional(v.string()),
       featuredImageStorageId: v.optional(v.id("_storage")),
+      featuredImageFocalX: v.optional(v.number()),
+      featuredImageFocalY: v.optional(v.number()),
       noindex: v.optional(v.boolean()),
       answerSummary: v.optional(v.string()),
       keyTakeaways: v.optional(v.array(v.string())),
@@ -178,6 +180,7 @@ export const updatePost = mutation({
       await requireUniqueSlug(ctx, args.patch.slug, args.postId);
     }
     const patch = { ...args.patch };
+    const clearingFeaturedUrl = args.patch.featuredImageUrl === "";
     const resolveImagePair = (
       urlKey: "ogImageUrl" | "twitterImageUrl" | "featuredImageUrl",
       sidKey:
@@ -201,6 +204,22 @@ export const updatePost = mutation({
     resolveImagePair("ogImageUrl", "ogImageStorageId");
     resolveImagePair("twitterImageUrl", "twitterImageStorageId");
     resolveImagePair("featuredImageUrl", "featuredImageStorageId");
+    if (clearingFeaturedUrl) {
+      patch.featuredImageFocalX = undefined;
+      patch.featuredImageFocalY = undefined;
+    }
+    const clampFocal = (n: number | undefined) => {
+      if (typeof n !== "number" || Number.isNaN(n)) {
+        return n;
+      }
+      return Math.min(100, Math.max(0, n));
+    };
+    if (patch.featuredImageFocalX !== undefined) {
+      patch.featuredImageFocalX = clampFocal(patch.featuredImageFocalX);
+    }
+    if (patch.featuredImageFocalY !== undefined) {
+      patch.featuredImageFocalY = clampFocal(patch.featuredImageFocalY);
+    }
     await ctx.db.patch("posts", args.postId, patch);
     return null;
   },
