@@ -63,7 +63,12 @@ function Block(props: { block: BlockDTO; theme: BlogUiTheme }) {
   switch (b.type) {
     case "paragraph":
       return (
-        <div className={cn(t.paragraph, "[&_a]:underline [&_code]:rounded [&_code]:bg-zinc-100 [&_code]:px-1 [&_p]:mb-3 last:[&_p]:mb-0")}>
+        <div
+          className={cn(
+            t.paragraph,
+            "[&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-zinc-200 [&_blockquote]:pl-3 [&_blockquote]:text-zinc-600 [&_code]:rounded [&_code]:bg-zinc-100 [&_code]:px-1 [&_li]:my-0.5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-3 last:[&_p]:mb-0 [&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-zinc-100 [&_pre]:p-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6",
+          )}
+        >
           <ReactMarkdown>{b.text}</ReactMarkdown>
         </div>
       );

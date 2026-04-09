@@ -1,12 +1,19 @@
 import type { BlockStored } from "basic-blog-convex-blog-cms";
-import { generateJSON } from "@tiptap/html";
 import type { JSONContent } from "@tiptap/core";
-import { marked } from "marked";
-import { createBlogEditorExtensions } from "./extensions";
+import { MarkdownManager } from "@tiptap/markdown";
+import { blogMarkdownMarkedOptions, createBlogEditorExtensions } from "./extensions";
 
-marked.setOptions({ gfm: true, breaks: true });
+let markdownManager: MarkdownManager | null = null;
 
-const extensions = createBlogEditorExtensions("");
+function getMarkdownManager(): MarkdownManager {
+  if (!markdownManager) {
+    markdownManager = new MarkdownManager({
+      extensions: createBlogEditorExtensions(""),
+      markedOptions: { ...blogMarkdownMarkedOptions },
+    });
+  }
+  return markdownManager;
+}
 
 function textContentJson(node: JSONContent | undefined): string {
   if (!node) {
@@ -19,53 +26,6 @@ function textContentJson(node: JSONContent | undefined): string {
     return node.content.map(textContentJson).join("");
   }
   return "";
-}
-
-/** Apply marks outermost-first (reverse of typical PM mark order). */
-function applyMarks(text: string, marks: JSONContent["marks"]): string {
-  if (!marks?.length) {
-    return escapeMarkdown(text);
-  }
-  let out = escapeMarkdown(text);
-  for (let i = marks.length - 1; i >= 0; i--) {
-    const m = marks[i]!;
-    if (m.type === "bold") {
-      out = `**${out}**`;
-    } else if (m.type === "italic") {
-      out = `*${out}*`;
-    } else if (m.type === "strike") {
-      out = `~~${out}~~`;
-    } else if (m.type === "code") {
-      out = `\`${out}\``;
-    } else if (m.type === "link" && m.attrs?.href) {
-      out = `[${out}](${m.attrs.href})`;
-    }
-  }
-  return out;
-}
-
-function escapeMarkdown(s: string): string {
-  return s.replace(/\\/g, "\\\\");
-}
-
-function inlineToMarkdown(node: JSONContent): string {
-  if (node.type === "text") {
-    return applyMarks(escapeMarkdown(node.text ?? ""), node.marks);
-  }
-  if (node.type === "hardBreak") {
-    return "\n";
-  }
-  if (node.content) {
-    return node.content.map(inlineToMarkdown).join("");
-  }
-  return "";
-}
-
-function paragraphToMarkdown(node: JSONContent): string {
-  if (!node.content?.length) {
-    return "";
-  }
-  return node.content.map(inlineToMarkdown).join("");
 }
 
 function isLinkOnlyParagraph(node: JSONContent): boolean {
@@ -96,6 +56,10 @@ function linkFromLinkOnlyParagraph(node: JSONContent): { url: string; title?: st
   return { url: href, title: text !== href ? text : undefined };
 }
 
+function serializeTopLevelNode(node: JSONContent): string {
+  return getMarkdownManager().serialize({ type: "doc", content: [node] }).trimEnd();
+}
+
 export function docJsonToBlocks(doc: JSONContent | undefined): Array<{ order: number; block: BlockStored }> {
   if (!doc || doc.type !== "doc" || !doc.content?.length) {
     return [];
@@ -118,7 +82,8 @@ function topLevelNodeToBlocks(node: JSONContent): BlockStored[] {
         const { url, title } = linkFromLinkOnlyParagraph(node);
         return [{ type: "link", url, title }];
       }
-      return [{ type: "paragraph", text: paragraphToMarkdown(node) }];
+      const md = serializeTopLevelNode(node);
+      return [{ type: "paragraph", text: md.length > 0 ? md : "\u00a0" }];
     }
     case "heading": {
       const level = Math.min(6, Math.max(1, (node.attrs?.level as number) ?? 2));
@@ -145,8 +110,13 @@ function topLevelNodeToBlocks(node: JSONContent): BlockStored[] {
     }
     case "horizontalRule":
       return [{ type: "paragraph", text: "---" }];
-    default:
-      return [];
+    default: {
+      const md = serializeTopLevelNode(node);
+      if (!md) {
+        return [];
+      }
+      return [{ type: "paragraph", text: md }];
+    }
   }
 }
 
@@ -159,28 +129,27 @@ export function blocksToDocJson(
 ): JSONContent {
   const sorted = [...rows].sort((a, b) => a.order - b.order);
   const content: JSONContent[] = [];
+  const mgr = getMarkdownManager();
 
   for (const { block } of sorted) {
     switch (block.type) {
       case "paragraph": {
         const raw = block.text.trim() ? block.text : "\u00a0";
-        const inlineHtml = marked.parseInline(raw, { async: false }) as string;
-        try {
-          const doc = generateJSON(`<p>${inlineHtml}</p>`, extensions);
-          const first = doc.content?.[0];
-          if (first?.type === "paragraph") {
-            content.push(first);
-          } else {
-            content.push({
-              type: "paragraph",
-              content: [{ type: "text", text: block.text }],
-            });
-          }
-        } catch {
+        if (raw === "\u00a0") {
+          content.push({ type: "paragraph" });
+          break;
+        }
+        const parsed = mgr.parse(raw);
+        const nodes = parsed.content ?? [];
+        if (nodes.length === 0) {
           content.push({
             type: "paragraph",
             content: [{ type: "text", text: block.text }],
           });
+        } else {
+          for (const n of nodes) {
+            content.push(n);
+          }
         }
         break;
       }

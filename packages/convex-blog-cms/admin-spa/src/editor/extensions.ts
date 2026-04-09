@@ -3,7 +3,14 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 import Youtube from "@tiptap/extension-youtube";
+import { Markdown } from "@tiptap/markdown";
 import type { Extensions } from "@tiptap/core";
+
+/** Passed to `Markdown` and `MarkdownManager` so stored paragraph text round-trips lists, quotes, and code. */
+export const blogMarkdownMarkedOptions = {
+  gfm: true,
+  breaks: true,
+} as const;
 
 /** Image with optional Convex storage id for round-trip to `postBlocks`. */
 export const BlogImage = Image.extend({
@@ -31,13 +38,6 @@ export const BlogImage = Image.extend({
 export function createBlogEditorExtensions(placeholder: string): Extensions {
   return [
     StarterKit.configure({
-      bulletList: false,
-      orderedList: false,
-      listItem: false,
-      listKeymap: false,
-      blockquote: false,
-      codeBlock: false,
-      code: false,
       link: false,
       heading: { levels: [1, 2, 3] },
     }),
@@ -56,6 +56,9 @@ export function createBlogEditorExtensions(placeholder: string): Extensions {
     Placeholder.configure({
       placeholder,
       emptyEditorClass: "is-editor-empty",
+    }),
+    Markdown.configure({
+      markedOptions: { ...blogMarkdownMarkedOptions },
     }),
   ];
 }

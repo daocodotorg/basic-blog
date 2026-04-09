@@ -28,7 +28,9 @@ function BlockView({ block }: { block: BlockDTO }) {
   switch (block.type) {
     case "paragraph":
       return (
-        <div className="text-foreground mb-3 text-[15px] leading-relaxed [&_a]:text-primary [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_p]:mb-2 last:[&_p]:mb-0">
+        <div
+          className="text-foreground mb-3 text-[15px] leading-relaxed [&_a]:text-primary [&_blockquote]:text-muted-foreground [&_blockquote]:border-border [&_blockquote]:mt-2 [&_blockquote]:mb-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_li]:my-0.5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-2 last:[&_p]:mb-0 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-muted [&_pre]:p-3 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-6"
+        >
           <ReactMarkdown>{block.text}</ReactMarkdown>
         </div>
       );

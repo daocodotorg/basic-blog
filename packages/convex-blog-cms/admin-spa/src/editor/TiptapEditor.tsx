@@ -2,7 +2,20 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import { useEffect, useMemo, useRef } from "react";
 import type { Editor } from "@tiptap/core";
 import type { JSONContent } from "@tiptap/core";
-import { Bold, Film, ImagePlus, Italic, Link2, Redo2, Strikethrough, Undo2 } from "lucide-react";
+import {
+  Bold,
+  Code2,
+  Film,
+  ImagePlus,
+  Italic,
+  Link2,
+  List,
+  ListOrdered,
+  Quote,
+  Redo2,
+  Strikethrough,
+  Undo2,
+} from "lucide-react";
 import { createBlogEditorExtensions } from "./extensions";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -105,6 +118,47 @@ export function TiptapEditor(props: {
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         >
           H3
+        </Button>
+        <Separator orientation="vertical" className="mx-1 h-6" />
+        <Button
+          type="button"
+          variant={editor.isActive("bulletList") ? "secondary" : "ghost"}
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          aria-label="Bullet list"
+        >
+          <List className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant={editor.isActive("orderedList") ? "secondary" : "ghost"}
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          aria-label="Numbered list"
+        >
+          <ListOrdered className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant={editor.isActive("blockquote") ? "secondary" : "ghost"}
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          aria-label="Quote"
+        >
+          <Quote className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant={editor.isActive("code") ? "secondary" : "ghost"}
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => editor.chain().focus().toggleCode().run()}
+          aria-label="Inline code"
+        >
+          <Code2 className="h-4 w-4" />
         </Button>
         <Separator orientation="vertical" className="mx-1 h-6" />
         <Button

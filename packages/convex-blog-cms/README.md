@@ -28,6 +28,14 @@ Open **http://127.0.0.1:3847/admin**. See [examples/convex-host/README.md](https
 
 This package ships a **pre-built admin UI** and two CLIs: **`blog-admin-serve`** (wrapper: reads `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL`, normalizes `.convex.site` → `.convex.cloud`, runs the pinned `convex-blog-admin`) and **`convex-blog-admin`** (underlying `serve` command). You do **not** need to scaffold a Next.js app for the default workflow: you wire Convex once, then run one command and open a local URL in the browser.
 
+### Bundled admin UI (screenshot)
+
+The SPA includes an **articles list** (search, **Drafts** / **Published**), a **post editor** with title, slug, author, created/published date, excerpt, collapsible **SEO & metadata** (meta title/description, Open Graph image), and a **TipTap** body editor. **Cover image** supports an HTTPS URL or Convex upload, with **16:9** and **5:4** crop previews and focal point for cards and social previews.
+
+The body editor is **Markdown-oriented**: headings, **bullet and numbered lists**, **blockquotes**, bold / italic / strikethrough, **links**, **inline and fenced code**, **images** (URL or device upload to storage), horizontal rule, and **YouTube** embeds. Paragraph blocks are stored as Markdown and rendered on the public site with `react-markdown` (see the [Next.js](https://github.com/daocodotorg/basic-blog/tree/main/examples/next-app) and [blog-ui](https://github.com/daocodotorg/basic-blog/tree/main/examples/blog-ui) examples). Rich paste from sources such as Google Docs usually preserves lists and basic formatting; plain pasted text stays as paragraphs unless you add list markers or structure in the editor.
+
+![Bundled admin UI: article list, post editor, and cover image with aspect previews](./docs/admin-ui-screenshot.png)
+
 ### Prerequisites
 
 
