@@ -1,3 +1,4 @@
+import { absoluteUrlFromSite, normalizeBaseUrl } from "./absoluteUrl.js";
 import type { PostDTO, SiteSettingsDTO } from "./types.js";
 
 function escapeXml(s: string): string {
@@ -12,10 +13,10 @@ export function buildRssXml(input: {
   site: SiteSettingsDTO;
   items: Array<{ post: PostDTO; path: string }>;
 }): string {
-  const base = input.site.baseUrl.replace(/\/$/, "");
+  const base = normalizeBaseUrl(input.site.baseUrl.trim());
   const itemsXml = input.items
     .map(({ post, path }) => {
-      const link = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+      const link = absoluteUrlFromSite(input.site, path);
       const pub = post.publishedAt
         ? new Date(post.publishedAt).toUTCString()
         : "";

@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
+import { absoluteUrlFromSite } from "../seo/absoluteUrl.js";
 import { derivePlainTextDescriptionFromBlocks } from "../seo/deriveDescriptionFromBlocks.js";
 import type { BlockDTO, PostDTO, SiteSettingsDTO } from "../seo/types.js";
 import { resolvePrimaryImage } from "../seo/resolvePrimaryImage.js";
-
-function absoluteUrl(site: SiteSettingsDTO | null, path: string): string {
-  const base = (site?.baseUrl ?? "").replace(/\/$/, "");
-  const p = path.startsWith("/") ? path : `/${path}`;
-  return `${base}${p}`;
-}
 
 /** Next.js `metadataBase` must be a valid URL; invalid `site.baseUrl` should not throw at render time. */
 function metadataBaseFromSiteUrl(baseUrl: string): URL | undefined {
@@ -23,17 +18,18 @@ export function postToNextMetadata(input: {
   blocks: Array<{ order: number; block: BlockDTO }>;
   site: SiteSettingsDTO | null;
   path: string;
+  /** Used when `site.baseUrl` is empty (e.g. align with `NEXT_PUBLIC_BASE_URL`). */
+  fallbackBaseUrl?: string;
 }): Metadata {
-  const { post, blocks, site, path } = input;
+  const { post, blocks, site, path, fallbackBaseUrl } = input;
   const title = post.metaTitle ?? post.title;
   const description =
     post.metaDescription ??
     post.excerpt ??
     derivePlainTextDescriptionFromBlocks(blocks) ??
     undefined;
-  const canonical = post.canonicalPath
-    ? absoluteUrl(site, post.canonicalPath)
-    : absoluteUrl(site, path);
+  const pathForCanonical = post.canonicalPath ?? path;
+  const canonical = absoluteUrlFromSite(site, pathForCanonical, fallbackBaseUrl);
   const img = resolvePrimaryImage(post, blocks, site);
   const robots = post.noindex ? { index: false, follow: true as const } : undefined;
 
@@ -63,6 +59,33 @@ export function postToNextMetadata(input: {
       title,
       description,
       images: img ? [img.url] : undefined,
+    },
+  };
+}
+
+export function blogIndexToNextMetadata(input: {
+  site: SiteSettingsDTO | null;
+  path: string;
+  title: string;
+  description?: string;
+  fallbackBaseUrl?: string;
+}): Metadata {
+  const { site, path, title, description, fallbackBaseUrl } = input;
+  const canonical = absoluteUrlFromSite(site, path, fallbackBaseUrl);
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
     },
   };
 }

@@ -1,3 +1,4 @@
+import { absoluteUrlFromSite } from "./absoluteUrl.js";
 import type { PostDTO, PrimaryImage, SiteSettingsDTO } from "./types.js";
 
 function escapeXml(s: string): string {
@@ -50,9 +51,8 @@ export function postsToSitemapEntries(input: {
     primaryImage: PrimaryImage | null;
   }>;
 }): SitemapUrlEntry[] {
-  const base = input.site.baseUrl.replace(/\/$/, "");
   return input.posts.map(({ post, path, primaryImage }) => {
-    const loc = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+    const loc = absoluteUrlFromSite(input.site, path);
     const lastmod = post.publishedAt
       ? new Date(post.publishedAt).toISOString().slice(0, 10)
       : undefined;

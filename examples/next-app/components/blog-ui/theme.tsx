@@ -26,6 +26,12 @@ export type BlogUiTheme = {
   list: string;
   listItem: string;
   listLink: string;
+  /** Lead paragraph under the title (e.g. `answerSummary`). */
+  lead: string;
+  takeawaysSection: string;
+  takeawaysHeading: string;
+  takeawaysList: string;
+  takeawaysListItem: string;
 };
 
 export const defaultBlogTheme: BlogUiTheme = {
@@ -51,6 +57,11 @@ export const defaultBlogTheme: BlogUiTheme = {
   list: "convex-blog-list space-y-2",
   listItem: "",
   listLink: "text-blue-600 underline",
+  lead: "mt-3 text-base leading-relaxed text-neutral-700",
+  takeawaysSection: "mt-6",
+  takeawaysHeading: "text-lg font-semibold text-neutral-900",
+  takeawaysList: "mt-2 list-disc space-y-1 pl-5 text-neutral-800",
+  takeawaysListItem: "",
 };
 
 export function cn(...parts: Array<string | undefined | false>): string {

@@ -1,0 +1,26 @@
+{
+  "name": "@basic-blog/convex-blog-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP server (stdio + Streamable HTTP) for basic-blog-convex-blog-cms: list/create/update posts via Convex.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/httpServer.js",
+    "start:stdio": "node dist/stdioServer.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "convex": "^1.33.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.12.0",
+    "typescript": "5.9.3"
+  }
+}

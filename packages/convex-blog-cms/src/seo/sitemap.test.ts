@@ -38,4 +38,21 @@ describe("sitemap", () => {
     });
     expect(entries[0]?.loc).toBe("https://example.com/blog/a");
   });
+
+  test("normalizes trailing slash on baseUrl", () => {
+    const site: SiteSettingsDTO = {
+      siteName: "S",
+      baseUrl: "https://example.com/",
+    };
+    const post: PostDTO = {
+      slug: "a",
+      title: "A",
+      status: "published",
+    };
+    const entries = postsToSitemapEntries({
+      site,
+      posts: [{ post, path: "/blog/a", primaryImage: null }],
+    });
+    expect(entries[0]?.loc).toBe("https://example.com/blog/a");
+  });
 });

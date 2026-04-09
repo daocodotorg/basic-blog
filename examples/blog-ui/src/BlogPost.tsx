@@ -20,6 +20,23 @@ export function BlogPost(props: {
           <p className={t.meta}>By {props.post.authorName}</p>
         ) : null}
       </header>
+      {props.post.answerSummary?.trim() ? (
+        <p className={t.lead}>{props.post.answerSummary.trim()}</p>
+      ) : null}
+      {props.post.keyTakeaways && props.post.keyTakeaways.length > 0 ? (
+        <section className={t.takeawaysSection} aria-labelledby="key-takeaways-heading">
+          <h2 id="key-takeaways-heading" className={t.takeawaysHeading}>
+            Key takeaways
+          </h2>
+          <ul className={t.takeawaysList}>
+            {props.post.keyTakeaways.map((item, i) => (
+              <li key={i} className={t.takeawaysListItem}>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       <BlockRenderer blocks={props.blocks} theme={props.theme} />
     </article>
   );

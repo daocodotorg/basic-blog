@@ -27,6 +27,9 @@ jobs:
       - name: Typecheck CMS package
         run: pnpm --filter basic-blog-convex-blog-cms run typecheck
 
+      - name: Typecheck MCP package
+        run: pnpm --filter @basic-blog/convex-blog-mcp run typecheck
+
       - name: Lint CMS package
         run: pnpm --filter basic-blog-convex-blog-cms run lint
 
