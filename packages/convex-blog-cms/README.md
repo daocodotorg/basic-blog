@@ -65,6 +65,8 @@ This package ships a **pre-built admin UI** and two CLIs: **`blog-admin-serve`**
 CONVEX_URL="https://…" BLOG_ADMIN_API_KEY="your-secret" npx blog-admin-serve
 ```
 
+**Uploads and `strictAdminApiKey`:** `blog.generateUploadUrl` is an admin mutation and uses the same auth as `updatePost` and `replacePostBlocks`. If you pass `strictAdminApiKey: true` to `makeBlogAdminAPI`, the client must send a matching `adminApiKey` on **every** admin call, including `generateUploadUrl`. The bundled admin SPA attaches that key for saves and image uploads. If you build your own admin UI, pass `adminApiKey` into `generateUploadUrl` the same way you do for other mutations—otherwise uploads return `Unauthorized`.
+
 **npm script (optional):** add to your app’s `package.json`:
 
 ```json
@@ -130,7 +132,7 @@ Set with `npx convex env set NAME value` or the Convex dashboard.
 | -------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `BLOG_ADMIN_API_KEY` | Optional simple token auth  | If set, clients may pass matching `adminApiKey`. Missing key is allowed unless you pass `strictAdminApiKey: true` to `makeBlogAdminAPI`. **Treat like a password** when you rely on it; prefer Convex Auth for production.                                            |
 
-`blog.generateUploadUrl` (from `makeBlogAdminAPI`) handles [file storage](https://docs.convex.dev/file-storage) uploads with the same admin auth as other writes; no separate env var for uploads.
+`blog.generateUploadUrl` (from `makeBlogAdminAPI`) handles [file storage](https://docs.convex.dev/file-storage) uploads with the same admin auth as other writes (including optional `adminApiKey` when you use token auth or `strictAdminApiKey`); no separate env var for uploads.
 
 
 ### Next.js / browser

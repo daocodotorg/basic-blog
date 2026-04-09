@@ -555,7 +555,7 @@ export function PostEditor() {
     setUploadBusy(true);
     setUploadTarget("og");
     try {
-      const uploadUrl = await generateUploadUrl();
+      const uploadUrl = await generateUploadUrl(wrap({}));
       const storageId = (await uploadFileToConvex(uploadUrl, file)) as Id<"_storage">;
       setOgImageStorageId(storageId);
       setOgImageUrl("");
@@ -581,7 +581,7 @@ export function PostEditor() {
     setUploadBusy(true);
     setUploadTarget("featured");
     try {
-      const uploadUrl = await generateUploadUrl();
+      const uploadUrl = await generateUploadUrl(wrap({}));
       const storageId = (await uploadFileToConvex(uploadUrl, file)) as Id<"_storage">;
       setFeaturedStorageId(storageId);
       setFeaturedUrl("");
@@ -613,7 +613,7 @@ export function PostEditor() {
     setUploadBusy(true);
     setUploadTarget("body");
     try {
-      const uploadUrl = await generateUploadUrl();
+      const uploadUrl = await generateUploadUrl(wrap({}));
       const storageId = await uploadFileToConvex(uploadUrl, file);
       const blob = URL.createObjectURL(file);
       editorRef.current.chain().focus().insertContent({
