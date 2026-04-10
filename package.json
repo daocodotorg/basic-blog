@@ -6,6 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/daocodotorg/basic-blog.git"
   },
+  "homepage": "https://www.npmjs.com/package/basic-blog-convex-blog-cms",
   "license": "Apache-2.0",
   "scripts": {
     "blog:admin": "pnpm --filter basic-blog-convex-blog-cms blog:admin",
