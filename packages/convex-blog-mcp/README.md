@@ -1,8 +1,12 @@
 # convex-blog-mcp
 
-[MCP](https://modelcontextprotocol.io) server for apps using [`basic-blog-convex-blog-cms`](https://www.npmjs.com/package/basic-blog-convex-blog-cms): **list**, **create**, and **update** blog posts (Convex `posts` table) via your deployed Convex functions (`listPostsForAdmin`, `createPost`, `updatePost`). Convex calls use [`ConvexHttpClient`](https://docs.convex.dev/quickstart/nodejs) and [`anyApi`](https://docs.convex.dev/client/javascript#using-convex-without-generated-convex_generatedapijs) (no host `convex/_generated` copy required).
+[MCP](https://modelcontextprotocol.io) server for projects that use the open-source **[basic-blog](https://github.com/daocodotorg/basic-blog)** monorepo and the published Convex component **[`basic-blog-convex-blog-cms`](https://www.npmjs.com/package/basic-blog-convex-blog-cms)**. It exposes **list**, **create**, and **update** for blog posts (Convex `posts` table) by calling your deployed functions `listPostsForAdmin`, `createPost`, and `updatePost`. Traffic uses [`ConvexHttpClient`](https://docs.convex.dev/quickstart/nodejs) and [`anyApi`](https://docs.convex.dev/client/javascript#using-convex-without-generated-convex_generatedapijs), so the MCP process does not need a copy of the host app’s `convex/_generated` files.
 
-Transports:
+This package is **developed in the monorepo** and is **not published to npm**; run it from a git checkout, Docker, or your own deploy (e.g. Railway). Same license as the repo: **Apache-2.0**.
+
+**Related:** [Repository README](https://github.com/daocodotorg/basic-blog#readme) · [Host setup (`docs/SETUP.md`)](https://github.com/daocodotorg/basic-blog/blob/main/docs/SETUP.md) · [Component npm README](https://github.com/daocodotorg/basic-blog/blob/main/packages/convex-blog-cms/README.md)
+
+## Transports
 
 - **stdio** — default **Dockerfile**; local agents (Cursor, Claude Code, Codex) with `docker run -i` or a local `node dist/stdioServer.js` after `pnpm build`.
 - **Streamable HTTP** — `Dockerfile.http`, `POST /mcp` (e.g. [Railway](https://docs.railway.com/)).
@@ -215,7 +219,24 @@ pnpm --filter @basic-blog/convex-blog-mcp run start:stdio
 4. Under **Variables**, add **`CONVEX_URL`** (required). Add **`BLOG_ADMIN_API_KEY`** and/or **`MCP_BEARER_TOKEN`** if you use them on the Convex host / HTTP server.
 5. **Settings → Networking → Generate Domain** (or your own custom domain). The MCP URL is **`https://<your-domain>/mcp`**.
 
-**True one-click via a published template:** if this repo (or your org) publishes a [Railway template](https://docs.railway.com/deploy/create), replace the button link with `https://railway.com/new/template/<TEMPLATE_ID>?utm_medium=integration&utm_source=github&utm_campaign=convex-blog-mcp` ([sharing docs](https://docs.railway.com/guides/publish-and-share)). To create that template: **Templates → New Template** → add a service from this GitHub repo → Root Directory **`packages/convex-blog-mcp`** → required variables as above → **Create Template** → copy the template URL from the template page.
+### Troubleshooting
+
+**`The executable pnpm could not be found` (or Nixpacks tries to run `pnpm`)**
+
+Railway is building from the **monorepo root** instead of **`packages/convex-blog-mcp`**. The root `package.json` / `pnpm-lock.yaml` make Nixpacks pick **pnpm**, while this service is meant to build with **`Dockerfile.http`** and **`npm`** inside the image.
+
+1. Open the service **Settings**.
+2. Set **Root Directory** to **`packages/convex-blog-mcp`** (exact path from the repo root).
+3. Confirm **Build** uses **Dockerfile** and **`Dockerfile.http`** (from [`railway.toml`](railway.toml) in that folder), not Nixpacks.
+4. Redeploy.
+
+If **Root Directory** is wrong, `railway.toml` in `packages/convex-blog-mcp` is ignored, so Docker is never used.
+
+**`pnpm` error after a successful Docker build**
+
+The image built correctly but **Railway’s start command** is still something like `pnpm start` (often inherited from the monorepo root). The runtime container has no `pnpm`. [`railway.toml`](railway.toml) sets **`startCommand = "node dist/httpServer.js"`** so config-as-code overrides that. Redeploy after pulling the latest config, or in the dashboard open **Settings → Deploy → Custom Start Command** and set **`node dist/httpServer.js`** (or clear the field if you rely on the Dockerfile `CMD` and nothing overrides it).
+
+**True one-click via a published template:** if this repo (or your org) publishes a [Railway template](https://docs.railway.com/deploy/create), replace the button link with `https://railway.com/new/template/<TEMPLATE_ID>?utm_medium=integration&utm_source=github&utm_campaign=convex-blog-mcp` ([Publish and share templates](https://docs.railway.com/templates/publish-and-share)). To create that template: **Templates → New Template** → add a service from this GitHub repo → Root Directory **`packages/convex-blog-mcp`** → required variables as above → **Create Template** → copy the template URL from the template page.
 
 ### HTTP client notes
 

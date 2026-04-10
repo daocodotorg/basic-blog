@@ -29,6 +29,9 @@ function printHelp() {
 
   CONVEX_URL="https://….convex.cloud" npx convex-blog-admin serve [--port 3847]
   Optional: BLOG_ADMIN_API_KEY=… (same as Convex env) for token auth.
+  Listen: BLOG_ADMIN_HOST (default 127.0.0.1; use 0.0.0.0 in containers / Railway).
+  Port: --port, or BLOG_ADMIN_PORT, or PORT (e.g. Railway), else 3847.
+  GET /health — plain 200 for load balancers.
 
   npx convex-blog-admin --help    Show this message
 
@@ -45,7 +48,7 @@ function safeResolveUnder(root, relPath) {
   return resolved;
 }
 
-function runServe(port) {
+function runServe(port, host) {
   const indexPath = join(adminSpaRoot, "index.html");
   if (!existsSync(indexPath)) {
     console.error(
@@ -98,6 +101,12 @@ function runServe(port) {
       return;
     }
 
+    if (url.pathname === "/health") {
+      res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("ok");
+      return;
+    }
+
     if (req.method !== "GET" && req.method !== "HEAD") {
       res.writeHead(405);
       res.end();
@@ -125,8 +134,13 @@ function runServe(port) {
     createReadStream(filePath).pipe(res);
   });
 
-  server.listen(port, "127.0.0.1", () => {
-    console.log(`Blog CMS admin → http://127.0.0.1:${port}/admin`);
+  server.listen(port, host, () => {
+    console.log(`Blog CMS admin listening on ${host}:${port}`);
+    if (host === "127.0.0.1" || host === "::1") {
+      console.log(`Open http://127.0.0.1:${port}/admin`);
+    } else {
+      console.log(`Open /admin on your public URL (e.g. Railway domain, port ${port})`);
+    }
     console.log(`CONVEX_URL=${convexUrl}`);
     if (adminApiKey) {
       console.log("BLOG_ADMIN_API_KEY is set (token auth).");
@@ -141,7 +155,7 @@ if (argv[0] === "--help" || argv[0] === "-h") {
 }
 
 if (argv[0] === "serve") {
-  let port = 3847;
+  let port = null;
   const pi = argv.indexOf("--port");
   if (pi >= 0 && argv[pi + 1]) {
     port = Number.parseInt(argv[pi + 1], 10);
@@ -159,7 +173,27 @@ if (argv[0] === "serve") {
       }
     }
   }
-  runServe(port);
+  if (port === null) {
+    const fromBlog = process.env.BLOG_ADMIN_PORT?.trim();
+    const fromPlatform = process.env.PORT?.trim();
+    if (fromBlog) {
+      port = Number.parseInt(fromBlog, 10);
+      if (Number.isNaN(port)) {
+        console.error("Invalid BLOG_ADMIN_PORT");
+        process.exit(1);
+      }
+    } else if (fromPlatform) {
+      port = Number.parseInt(fromPlatform, 10);
+      if (Number.isNaN(port)) {
+        console.error("Invalid PORT");
+        process.exit(1);
+      }
+    } else {
+      port = 3847;
+    }
+  }
+  const host = process.env.BLOG_ADMIN_HOST?.trim() || "127.0.0.1";
+  runServe(port, host);
 } else if (argv.length === 0) {
   printHelp();
   process.exit(0);

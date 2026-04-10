@@ -1,0 +1,14 @@
+# Railway config-as-code for the bundled admin UI.
+# Set the service Root Directory to `packages/convex-blog-cms` (monorepo) so this file applies.
+#
+# https://docs.railway.com/reference/config-as-code
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.admin"
+watchPatterns = ["packages/convex-blog-cms/**"]
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"

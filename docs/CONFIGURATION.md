@@ -21,7 +21,9 @@ Set in the shell when you run the CLI (or via a tool like [dotenv-cli](https://w
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` | Yes | HTTPS deployment URL (`.convex.cloud`). Set at least one. Both **`blog-admin-serve`** and **`convex-blog-admin serve`** read either variable. |
-| `BLOG_ADMIN_PORT` | Optional | Default port when **`blog-admin-serve`** is used without `--port` (underlying CLI default remains **3847**). |
+| `BLOG_ADMIN_PORT` | Optional | Port when **`blog-admin-serve`** / **`convex-blog-admin serve`** run without `--port`, unless **`PORT`** is set. |
+| `PORT` | Optional | Platform convention (e.g. **Railway**). Used as the listen port when **`--port`** and **`BLOG_ADMIN_PORT`** are unset. If still unset, the CLI defaults to **3847**. |
+| `BLOG_ADMIN_HOST` | Optional | Bind address (default **127.0.0.1**). Use **0.0.0.0** in containers or on Railway so the service accepts external traffic; the repo’s **[`Dockerfile.admin`](../packages/convex-blog-cms/Dockerfile.admin)** sets this. |
 | `BLOG_ADMIN_API_KEY` | Optional | If you use token auth, must match Convex `BLOG_ADMIN_API_KEY` when passing `adminApiKey` from the CLI. Omit for open local admin unless the host uses `strictAdminApiKey`. |
 
 If the URL ends in **`.convex.site`**, **`blog-admin-serve`** rewrites it to **`.convex.cloud`** (HTTP Actions host vs JS client URL) and prints a warning.

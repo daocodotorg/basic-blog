@@ -4,7 +4,7 @@
  *
  * - Normalizes `.convex.site` → `.convex.cloud` for the Convex JS client.
  * - Invokes the CLI from the installed package (no `npx` fetch; matches lockfile version).
- * - Optional `BLOG_ADMIN_PORT` when `--port` is not passed (default in CLI remains 3847).
+ * - Optional `BLOG_ADMIN_PORT` or `PORT` when `--port` is not passed (CLI default 3847 if neither set).
  *
  * Usage:
  *   pnpm blog:admin
@@ -70,7 +70,9 @@ const hasPort =
   userArgs.includes("--port") ||
   userArgs.some((a) => a.startsWith("--port="));
 if (!hasPort) {
-  const fromEnv = process.env.BLOG_ADMIN_PORT?.trim();
+  const fromBlog = process.env.BLOG_ADMIN_PORT?.trim();
+  const fromPlatform = process.env.PORT?.trim();
+  const fromEnv = fromBlog || fromPlatform;
   if (fromEnv) {
     serveArgs.push("--port", fromEnv);
   }

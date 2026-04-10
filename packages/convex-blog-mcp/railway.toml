@@ -10,6 +10,9 @@ dockerfilePath = "Dockerfile.http"
 watchPatterns = ["packages/convex-blog-mcp/**"]
 
 [deploy]
+# Force runtime command: Railway can inherit `pnpm …` from the monorepo root if unset,
+# but this image only has Node + npm (see Dockerfile.http). Must match Dockerfile CMD.
+startCommand = "node dist/httpServer.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"

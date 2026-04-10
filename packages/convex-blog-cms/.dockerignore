@@ -1,0 +1,7 @@
+node_modules
+dist
+*.tsbuildinfo
+.git
+coverage
+**/*.test.ts
+**/*.test.tsx

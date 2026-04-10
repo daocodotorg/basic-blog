@@ -1,0 +1,24 @@
+# Bundled admin static server for Railway and similar hosts (GET /admin, GET /health).
+# Build context: this directory. On Railway set Root Directory to packages/convex-blog-cms.
+#
+# Runtime: CONVEX_URL (required), optional BLOG_ADMIN_API_KEY. Railway sets PORT automatically;
+# BLOG_ADMIN_HOST=0.0.0.0 listens on all interfaces.
+
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY tsconfig.json tsconfig.build.json ./
+COPY bin ./bin
+COPY admin-spa ./admin-spa
+COPY src ./src
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+ENV BLOG_ADMIN_HOST=0.0.0.0
+COPY --from=build /app/dist ./dist
+COPY bin/convex-blog-admin.mjs ./bin/
+EXPOSE 8080
+CMD ["sh", "-c", "exec node bin/convex-blog-admin.mjs serve"]
