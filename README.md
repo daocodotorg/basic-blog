@@ -1,3 +1,5 @@
+[![Watch on YouTube — Basic Blog overview](https://img.youtube.com/vi/1HVfBt0kZr4/maxresdefault.jpg)](https://youtu.be/1HVfBt0kZr4)
+
 # Basic Blog — Convex blog & CMS component
 
 Open-source monorepo around **[basic-blog-convex-blog-cms](https://www.npmjs.com/package/basic-blog-convex-blog-cms)** on npm: a **[Convex component](https://docs.convex.dev/components)** for a small headless blog (posts, blocks, site settings, uploads), a **bundled admin** (`blog-admin-serve`), **integration docs**, **examples**, and an optional **MCP server** for agents.
