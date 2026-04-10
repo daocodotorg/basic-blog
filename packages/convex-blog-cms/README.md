@@ -72,7 +72,7 @@ Bundled admin UI: article list, post editor, and cover image with aspect preview
 
 ### Deploy the admin on Railway
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/github?utm_medium=integration&utm_source=github&utm_campaign=basic-blog-convex-blog-admin)
+[![Deploy on Railway](https://img.shields.io/badge/Deploy%20on-Railway-13102c?style=for-the-badge%26logo=railway%26logoColor=white)](https://railway.com/new/github?utm_medium=integration%26utm_source=github%26utm_campaign=basic-blog-convex-blog-admin)
 
 1. Click the button, connect **GitHub**, and import this repository.
 2. Set the service **Root Directory** to **`packages/convex-blog-cms`** (so [`railway.toml`](railway.toml) picks [`Dockerfile.admin`](Dockerfile.admin); if Railway builds from the monorepo root instead, confirm **Build** uses that Dockerfile, not Nixpacks — same pitfall as [convex-blog-mcp](https://github.com/daocodotorg/basic-blog/blob/main/packages/convex-blog-mcp/README.md#streamable-http-railway)).

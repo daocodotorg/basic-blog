@@ -50,17 +50,17 @@ CONVEX_URL="https://…" BLOG_ADMIN_API_KEY="…" npx blog-admin-serve
 
 ## Deploy on Railway
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/convex-basic-blog?referralCode=z9Eeq9&utm_medium=integration&utm_source=template&utm_campaign=generic)
+[![Deploy on Railway](https://img.shields.io/badge/Deploy%20on-Railway-13102c?style=for-the-badge%26logo=railway%26logoColor=white)](https://railway.com/deploy/convex-basic-blog?referralCode=z9Eeq9%26utm_medium=integration%26utm_source=template%26utm_campaign=generic)
 
 One Railway template provisions **admin UI** and **MCP HTTP** in one project.
 
-1. Set `**CONVEX_URL`** on each service (and optional `**BLOG_ADMIN_API_KEY`** / MCP bearer token if you use them).
+1. Set **`CONVEX_URL`** on each service (and optional **`BLOG_ADMIN_API_KEY`** / MCP bearer token if you use them).
 2. **Networking → Generate domain** for each service you expose.
-3. Open `**/admin`** for the CMS; point MCP clients at your MCP service URL.
+3. Open **`/admin`** for the CMS; point MCP clients at your MCP service URL.
 
 **Details:** [Admin on Railway](packages/convex-blog-cms/README.md#deploy-the-admin-on-railway) · [MCP Streamable HTTP / Railway](packages/convex-blog-mcp/README.md#streamable-http-railway)
 
-**Deploy one service only** (import this repo on Railway): MCP → Root Directory `**packages/convex-blog-mcp`** · Admin → `**packages/convex-blog-cms`**
+**Deploy one service only** (import this repo on Railway): MCP → Root Directory **`packages/convex-blog-mcp`** · Admin → **`packages/convex-blog-cms`**
 
 ---
 

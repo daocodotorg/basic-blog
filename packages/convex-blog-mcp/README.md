@@ -211,7 +211,7 @@ pnpm --filter @basic-blog/convex-blog-mcp run start:stdio
 
 ### Deploy on Railway (one click)
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/github?utm_medium=integration&utm_source=github&utm_campaign=basic-blog-convex-blog-mcp)
+[![Deploy on Railway](https://img.shields.io/badge/Deploy%20on-Railway-13102c?style=for-the-badge%26logo=railway%26logoColor=white)](https://railway.com/new/github?utm_medium=integration%26utm_source=github%26utm_campaign=basic-blog-convex-blog-mcp)
 
 1. Click the button, sign in to Railway, and connect **GitHub** when prompted.
 2. Import **[`daocodotorg/basic-blog`](https://github.com/daocodotorg/basic-blog)** (or your fork of this monorepo).
