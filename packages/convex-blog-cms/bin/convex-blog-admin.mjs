@@ -2,7 +2,7 @@
 /**
  * CLI: serve the bundled admin UI from basic-blog-convex-blog-cms.
  */
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import http from "node:http";
 import { dirname, extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -37,6 +37,15 @@ function printHelp() {
 
 Host Convex must expose makeBlogAdminAPI as blog.* and uploads as media.* (see package README).
 `);
+}
+
+function printVersion() {
+  try {
+    const meta = JSON.parse(readFileSync(join(pkgRoot, "package.json"), "utf8"));
+    console.log(meta.version ?? "");
+  } catch {
+    console.log("");
+  }
 }
 
 function safeResolveUnder(root, relPath) {
@@ -151,6 +160,11 @@ function runServe(port, host) {
 const argv = process.argv.slice(2);
 if (argv[0] === "--help" || argv[0] === "-h") {
   printHelp();
+  process.exit(0);
+}
+
+if (argv[0] === "--version" || argv[0] === "-V") {
+  printVersion();
   process.exit(0);
 }
 

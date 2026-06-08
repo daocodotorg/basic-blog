@@ -17,6 +17,46 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+const rawArgs = process.argv.slice(2);
+const pkgScriptsDir = dirname(fileURLToPath(import.meta.url));
+const convexPkgRoot = join(pkgScriptsDir, "..");
+
+function readCmsVersion() {
+  try {
+    const meta = JSON.parse(readFileSync(join(convexPkgRoot, "package.json"), "utf8"));
+    return meta.version ?? "";
+  } catch {
+    return "";
+  }
+}
+
+const cmsVersion = readCmsVersion();
+
+function printHelp() {
+  console.log(`blog-admin-serve — Basic Blog CMS admin UI launcher
+
+  CONVEX_URL="https://….convex.cloud" npx blog-admin-serve [--port 3847]
+  Optional: BLOG_ADMIN_API_KEY=… (same as Convex env) for token auth.
+  Listen: BLOG_ADMIN_HOST (default 127.0.0.1; use 0.0.0.0 in containers / Railway).
+  Port: --port, or BLOG_ADMIN_PORT, or PORT (e.g. Railway), else 3847.
+
+  npx blog-admin-serve --help       Show this message
+  npx blog-admin-serve --version    Show package version
+
+This launcher delegates to convex-blog-admin serve after normalizing Convex URL settings.
+`);
+}
+
+if (rawArgs[0] === "--help" || rawArgs[0] === "-h") {
+  printHelp();
+  process.exit(0);
+}
+
+if (rawArgs[0] === "--version" || rawArgs[0] === "-v" || rawArgs[0] === "-V") {
+  console.log(cmsVersion);
+  process.exit(0);
+}
+
 let url =
   process.env.CONVEX_URL?.trim() ||
   process.env.NEXT_PUBLIC_CONVEX_URL?.trim() ||
@@ -54,15 +94,6 @@ try {
 }
 
 const cliPath = join(cmsPkgRoot, "bin", "convex-blog-admin.mjs");
-let cmsVersion = "";
-try {
-  const meta = JSON.parse(readFileSync(join(cmsPkgRoot, "package.json"), "utf8"));
-  cmsVersion = meta.version ?? "";
-} catch {
-  // ignore
-}
-
-const rawArgs = process.argv.slice(2);
 const userArgs = rawArgs[0] === "serve" ? rawArgs.slice(1) : rawArgs;
 const serveArgs = ["serve"];
 
@@ -84,9 +115,6 @@ if (cmsVersion) {
     `[blog-admin-serve] basic-blog-convex-blog-cms@${cmsVersion} — opening admin after listen…`,
   );
 }
-
-const pkgScriptsDir = dirname(fileURLToPath(import.meta.url));
-const convexPkgRoot = join(pkgScriptsDir, "..");
 
 const child = spawn(process.execPath, [cliPath, ...serveArgs], {
   cwd: convexPkgRoot,
